@@ -9,16 +9,26 @@
 import SwiftUI
 
 struct MainTabView: View {
+    
+    @State private var selectedTab: Tab = .dashboard
+    
+    enum Tab: Hashable {
+        case dashboard, log, settings
+    }
+    
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             DashboardView()
                 .tabItem { Label("Dashboard", systemImage: "chart.line.uptrend.xyaxis") }
+                .tag(Tab.dashboard)
 
-            LogActivityView()
+            LogActivityView(selectedTab: $selectedTab)
                 .tabItem { Label("Log", systemImage: "plus.circle") }
+                .tag(Tab.log)
 
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
+                .tag(Tab.settings)
         }
     }
 }
