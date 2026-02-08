@@ -14,15 +14,40 @@ final class MetricsStore: ObservableObject {
     // Core metrics (later: loaded from Firestore)
     @Published var todayStrain: Double = 0.0
     @Published var recoveryText: String = "--"
+    @Published var todayActivities: [ActivityLog] = []
+    
+    init() {
+        if let saved = LocalStore.load() {
+            self.todayStrain = saved.todayStrain
+            self.todayActivities = saved.todayActivities
+        }
+    }
+
 
     // Simple placeholder “engine”
     func logActivity(type: String, durationMinutes: Double, intensity: Double) {
         let weight = activityWeight(for: type)
 
-        // v0 strain model (simple + defensible for now)
+        let durationInt = Int(durationMinutes.rounded())
+        let intensityInt = Int(intensity.rounded())
+        
+        //v0 Strain
         let added = intensity * durationMinutes * weight
+        let addedRounded = round(added*10)/10
+        
+        //Update Metrics
+        todayStrain = round((todayStrain + addedRounded) * 10) / 10
 
-        todayStrain = round((todayStrain + added) * 10) / 10
+        //Store activity
+        let entry = ActivityLog(
+            type: type,
+            durationMinutes: durationInt,
+            intensity: intensityInt,
+            strainAdded: addedRounded
+        )
+        todayActivities.insert(entry, at: 0)
+        
+        persist()
     }
 
     // MARK: - Derived UI text
@@ -50,4 +75,11 @@ final class MetricsStore: ObservableObject {
         default: return 1.0
         }
     }
+    
+    private func persist() {
+        LocalStore.save(
+            .init(todayStrain: todayStrain, todayActivities: todayActivities)
+        )
+    }
+
 }
