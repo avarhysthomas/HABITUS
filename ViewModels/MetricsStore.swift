@@ -15,12 +15,21 @@ final class MetricsStore: ObservableObject {
     @Published var todayStrain: Double = 0.0
     @Published var recoveryText: String = "--"
     @Published var todayActivities: [ActivityLog] = []
+    @Published var recoveryScore: Int = 0
+    @Published var recoveryState: String = "--"
+    @Published var recoveryGuidance: String = ""
+    @Published var yesterdayStrain: Double = 0.0
+
+
+    private let recoveryAPI = RecoveryAPI()
+
     
     init() {
         if let saved = LocalStore.load() {
             self.todayStrain = saved.todayStrain
             self.todayActivities = saved.todayActivities
         }
+        refreshRecovery(sleepHours: 7.0, hadRestDay: false)
     }
 
 
@@ -49,6 +58,33 @@ final class MetricsStore: ObservableObject {
         
         persist()
     }
+    
+    func refreshRecovery(sleepHours: Double, hadRestDay: Bool) {
+        Task {
+            do {
+                print("Calling recovery with yesterdayStrain=\(yesterdayStrain), sleep=\(sleepHours), rest=\(hadRestDay)")
+                
+                let res = try await recoveryAPI.computeRecovery(
+                    input: RecoveryRequest(
+                        yesterdayStrain: yesterdayStrain,
+                        sleepHours: sleepHours,
+                        hadRestDay: hadRestDay
+                    )
+                )
+                
+                print("✅ Recovery response:", res)
+                
+                await MainActor.run {
+                    self.recoveryScore = res.score
+                    self.recoveryState = res.state
+                    self.recoveryGuidance = res.guidance
+                }
+            } catch {
+                print("RecoveryAPI error:", error)
+            }
+        }
+    }
+
 
     // MARK: - Derived UI text
 
@@ -81,5 +117,4 @@ final class MetricsStore: ObservableObject {
             .init(todayStrain: todayStrain, todayActivities: todayActivities)
         )
     }
-
 }

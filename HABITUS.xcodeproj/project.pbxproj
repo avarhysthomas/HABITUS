@@ -21,6 +21,7 @@
 		A1131BB92F17EA9700F99D2F /* ActivityLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131BB82F17E63100F99D2F /* ActivityLog.swift */; };
 		A1131BBB2F17EC8900F99D2F /* ActivityRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131BBA2F17EC8200F99D2F /* ActivityRow.swift */; };
 		A1B1247C2F390DEB002B5903 /* LocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1247B2F390DCD002B5903 /* LocalStore.swift */; };
+		A1B1249D2F3CCDDE002B5903 /* RecoveryRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1249C2F3CCDDE002B5903 /* RecoveryRequest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +59,8 @@
 		A1131BB82F17E63100F99D2F /* ActivityLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLog.swift; sourceTree = "<group>"; };
 		A1131BBA2F17EC8200F99D2F /* ActivityRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRow.swift; sourceTree = "<group>"; };
 		A1B1247B2F390DCD002B5903 /* LocalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStore.swift; sourceTree = "<group>"; };
+		A1B1249C2F3CCDDE002B5903 /* RecoveryRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryRequest.swift; sourceTree = "<group>"; };
+		A1B124A42F3CD256002B5903 /* HABITUS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "HABITUS-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -101,6 +104,7 @@
 		A1131B162F1667F900F99D2F = {
 			isa = PBXGroup;
 			children = (
+				A1B124A42F3CD256002B5903 /* HABITUS-Info.plist */,
 				A1B1247A2F390DC3002B5903 /* Services */,
 				A1131B512F16684E00F99D2F /* Utils */,
 				A1131B4F2F16684100F99D2F /* ViewModels */,
@@ -206,9 +210,18 @@
 		A1B1247A2F390DC3002B5903 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A1B1249B2F3CCDD7002B5903 /* API */,
 				A1B1247B2F390DCD002B5903 /* LocalStore.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		A1B1249B2F3CCDD7002B5903 /* API */ = {
+			isa = PBXGroup;
+			children = (
+				A1B1249C2F3CCDDE002B5903 /* RecoveryRequest.swift */,
+			);
+			path = API;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -365,6 +378,7 @@
 				A1131B622F17CD3900F99D2F /* StatCard.swift in Sources */,
 				A1131B612F17CD1E00F99D2F /* OnboardingView.swift in Sources */,
 				A1131B5F2F17CD0900F99D2F /* MainTabView.swift in Sources */,
+				A1B1249D2F3CCDDE002B5903 /* RecoveryRequest.swift in Sources */,
 				A1131BB92F17EA9700F99D2F /* ActivityLog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -527,6 +541,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "HABITUS-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -554,6 +569,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "HABITUS-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
