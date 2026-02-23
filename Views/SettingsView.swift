@@ -9,14 +9,12 @@
 import SwiftUI
 
 struct SettingsView: View {
-    var body: some View {
-        NavigationStack {
-            List {
-                Text("Account (coming soon)")
-                Text("Notifications (coming soon)")
-                Text("Data export (coming soon)")
+            private var tester = BackendTest()
+
+            var body: some View {
+                Button("Run logSession test") {
+                    Task { await tester.runLogSessionTest() }
+                }
+                .padding()
             }
-            .navigationTitle("Settings")
         }
-    }
-}
