@@ -5,11 +5,19 @@
 //  Created by Ava Thomas on 13/01/2026.
 //
 
-
 import SwiftUI
+import FirebaseCore
 
 @main
-struct HabitusApp: App {
+struct HABITUSApp: App {
+    init() {
+        FirebaseApp.configure()
+        
+    #if DEBUG
+    FirebaseEmulatorConfig.connect()
+    #endif
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()

@@ -1,5 +1,7 @@
 export type Modality = "HIIT" | "Endurance" | "Strength" | "Mobility";
 
+export const STRAIN_A = 0.004; // compression constant for strain score
+
 export interface StrainInput {
   durationMinutes: number; // minutes
   rpe: number;             // 0..10
@@ -34,9 +36,6 @@ const K3 = 0.06;
 
 const SF_MIN = 0.8;
 const SF_MAX = 1.3;
-
-// compression constant a
-const A = 0.004;
 
 function clamp(x: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, x));
@@ -79,7 +78,7 @@ export function computeStrain(input: StrainInput): StrainResult {
   const L_adj = L_mod * S_f;
 
   // Step 5 (0–21 compression)
-  const strainScore_0_21 = 21 * (1 - Math.exp(-A * L_adj));
+  const strainScore_0_21 = 21 * (1 - Math.exp(-STRAIN_A * L_adj));
 
   return {
     L_base,
