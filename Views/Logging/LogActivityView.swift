@@ -110,17 +110,14 @@ struct LogActivityView: View {
                 "modality": backendModality(for: type),
                 "sleepHours": 7.5,
                 "sleepQuality": 3,
-                "baselineSleepHours": 7.5
+                "baselineSleepHours": 7.5,
+                "activityType": type,
+                "distanceKm": type == "Run" ? distanceKm : 0,
             ]
 
             _ = try await functions
                 .httpsCallable("logSession")
                 .call(payload)
-
-            await GoalProgressService.updateProgress(
-                for: type,
-                distanceKm: type == "Run" ? distanceKm : nil
-            )
 
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
