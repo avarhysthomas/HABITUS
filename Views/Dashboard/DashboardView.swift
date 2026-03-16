@@ -10,6 +10,7 @@ import SwiftUI
 struct DashboardView: View {
     @StateObject private var dayStore = DayDashboardStore()
     @StateObject private var sessionsStore = TodaySessionsStore()
+    @StateObject private var goalsStore = GoalsStore()
 
     private var today: String {
         DayKey.todayUTC()
@@ -58,6 +59,24 @@ struct DashboardView: View {
                         }
                     }
 
+                    if !dayStore.smartPlanItems.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Smart Plan")
+                                .font(.headline)
+
+                            if !dayStore.smartPlanSummary.isEmpty {
+                                Text(dayStore.smartPlanSummary)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            VStack(spacing: 14) {
+                                ForEach(dayStore.scheduledPlanItems) { item in
+                                    ScheduledPlanCard(item: item)
+                                }
+                            }
+                        }
+                    }
+
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
                             Text("Today’s log")
@@ -91,10 +110,39 @@ struct DashboardView: View {
             .onAppear {
                 dayStore.startListening(dateKey: today)
                 sessionsStore.startListening(dateKey: today)
+                goalsStore.startListening()
+
+                Task {
+                    await dayStore.generateSmartPlan(
+                        dateKey: today,
+                        goals: goalsStore.goals
+                        )
+                }
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: Notification.Name("dailyInputsSaved")
+                )
+            ) { _ in
+                Task {
+                    await dayStore.generateSmartPlan(
+                        dateKey: today,
+                        goals: goalsStore.goals
+                    )
+                }
+            }
+            .onChange(of: goalsStore.goals) { _ in
+                Task {
+                    await dayStore.generateSmartPlan(
+                        dateKey: today,
+                        goals: goalsStore.goals
+                    )
+                }
             }
             .onDisappear {
                 dayStore.stopListening()
                 sessionsStore.stopListening()
+                goalsStore.stopListening()
             }
         }
     }
