@@ -12,7 +12,6 @@
 		A1131B5E2F166E7D00F99D2F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B532F16686600F99D2F /* RootView.swift */; };
 		A1131B5F2F17CD0900F99D2F /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B552F1668AF00F99D2F /* MainTabView.swift */; };
 		A1131B602F17CD1600F99D2F /* SessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B542F1668A500F99D2F /* SessionViewModel.swift */; };
-		A1131B612F17CD1E00F99D2F /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B562F1668B600F99D2F /* OnboardingView.swift */; };
 		A1131B622F17CD3900F99D2F /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B5B2F1668DE00F99D2F /* StatCard.swift */; };
 		A1131B632F17CD3D00F99D2F /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B592F1668CC00F99D2F /* SettingsView.swift */; };
 		A1131B642F17CD4400F99D2F /* LogActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1131B582F1668C400F99D2F /* LogActivityView.swift */; };
@@ -36,6 +35,22 @@
 		A1B1252B2F68113A002B5903 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1252A2F68113A002B5903 /* AuthView.swift */; };
 		A1B1252D2F681144002B5903 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1252C2F681144002B5903 /* SignUpView.swift */; };
 		A1B1252F2F68114F002B5903 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1252E2F68114F002B5903 /* SignInView.swift */; };
+		A1B1253D2F681CB7002B5903 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1253C2F681CB5002B5903 /* Goal.swift */; };
+		A1B125412F68229D002B5903 /* SmartPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125402F68229D002B5903 /* SmartPlan.swift */; };
+		A1B125452F6822C5002B5903 /* SmartPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125442F6822C5002B5903 /* SmartPlanCard.swift */; };
+		A1B125472F682587002B5903 /* TimeSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125462F682587002B5903 /* TimeSlot.swift */; };
+		A1B125492F68259F002B5903 /* CalendarAvailabilityService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125482F68259F002B5903 /* CalendarAvailabilityService.swift */; };
+		A1B1254B2F6825AB002B5903 /* ScheduledPlanItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1254A2F6825AB002B5903 /* ScheduledPlanItem.swift */; };
+		A1B1254E2F6825C8002B5903 /* PlanScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1254D2F6825C8002B5903 /* PlanScheduler.swift */; };
+		A1B125502F682646002B5903 /* ScheduledPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1254F2F682646002B5903 /* ScheduledPlanCard.swift */; };
+		A1B125512F68289E002B5903 /* HABITUS-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B124A42F3CD256002B5903 /* HABITUS-Info.plist */; };
+		A1B125532F682ED5002B5903 /* DailyCheckInStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125522F682ECF002B5903 /* DailyCheckInStore.swift */; };
+		A1B125562F682EE7002B5903 /* SleepCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125552F682EE2002B5903 /* SleepCheckInView.swift */; };
+		A1B125582F682F3B002B5903 /* DailyInputsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125572F682F3B002B5903 /* DailyInputsAPI.swift */; };
+		A1B1255B2F683201002B5903 /* AppNotifications.swift in Resources */ = {isa = PBXBuildFile; fileRef = A1B1255A2F683201002B5903 /* AppNotifications.swift */; };
+		A1B1255D2F683B79002B5903 /* GoalsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1255C2F683B79002B5903 /* GoalsStore.swift */; };
+		A1B125602F683B8E002B5903 /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1255F2F683B8E002B5903 /* GoalsView.swift */; };
+		A1B125622F6841B0002B5903 /* GoalProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125612F6841B0002B5903 /* GoalProgressService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,7 +79,6 @@
 		A1131B532F16686600F99D2F /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		A1131B542F1668A500F99D2F /* SessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionViewModel.swift; sourceTree = "<group>"; };
 		A1131B552F1668AF00F99D2F /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		A1131B562F1668B600F99D2F /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A1131B572F1668BC00F99D2F /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		A1131B582F1668C400F99D2F /* LogActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogActivityView.swift; sourceTree = "<group>"; };
 		A1131B592F1668CC00F99D2F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -83,6 +97,21 @@
 		A1B1252A2F68113A002B5903 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		A1B1252C2F681144002B5903 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		A1B1252E2F68114F002B5903 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		A1B1253C2F681CB5002B5903 /* Goal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Goal.swift; sourceTree = "<group>"; };
+		A1B125402F68229D002B5903 /* SmartPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPlan.swift; sourceTree = "<group>"; };
+		A1B125442F6822C5002B5903 /* SmartPlanCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPlanCard.swift; sourceTree = "<group>"; };
+		A1B125462F682587002B5903 /* TimeSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSlot.swift; sourceTree = "<group>"; };
+		A1B125482F68259F002B5903 /* CalendarAvailabilityService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarAvailabilityService.swift; sourceTree = "<group>"; };
+		A1B1254A2F6825AB002B5903 /* ScheduledPlanItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduledPlanItem.swift; sourceTree = "<group>"; };
+		A1B1254D2F6825C8002B5903 /* PlanScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanScheduler.swift; sourceTree = "<group>"; };
+		A1B1254F2F682646002B5903 /* ScheduledPlanCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduledPlanCard.swift; sourceTree = "<group>"; };
+		A1B125522F682ECF002B5903 /* DailyCheckInStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCheckInStore.swift; sourceTree = "<group>"; };
+		A1B125552F682EE2002B5903 /* SleepCheckInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepCheckInView.swift; sourceTree = "<group>"; };
+		A1B125572F682F3B002B5903 /* DailyInputsAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyInputsAPI.swift; sourceTree = "<group>"; };
+		A1B1255A2F683201002B5903 /* AppNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotifications.swift; sourceTree = "<group>"; };
+		A1B1255C2F683B79002B5903 /* GoalsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsStore.swift; sourceTree = "<group>"; };
+		A1B1255F2F683B8E002B5903 /* GoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsView.swift; sourceTree = "<group>"; };
+		A1B125612F6841B0002B5903 /* GoalProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalProgressService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -130,11 +159,11 @@
 		A1131B162F1667F900F99D2F = {
 			isa = PBXGroup;
 			children = (
+				A1B125592F6831ED002B5903 /* Utils */,
 				A1B124E62F61C553002B5903 /* Components */,
 				A1B124BF2F4C7CEB002B5903 /* GoogleService-Info.plist */,
 				A1B124A42F3CD256002B5903 /* HABITUS-Info.plist */,
 				A1B1247A2F390DC3002B5903 /* Services */,
-				A1131B512F16684E00F99D2F /* Utils */,
 				A1131B4F2F16684100F99D2F /* ViewModels */,
 				A1131B4B2F16682400F99D2F /* Views */,
 				A1131B4A2F16681D00F99D2F /* Models */,
@@ -168,6 +197,10 @@
 		A1131B4A2F16681D00F99D2F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A1B1254A2F6825AB002B5903 /* ScheduledPlanItem.swift */,
+				A1B125462F682587002B5903 /* TimeSlot.swift */,
+				A1B125402F68229D002B5903 /* SmartPlan.swift */,
+				A1B1253C2F681CB5002B5903 /* Goal.swift */,
 				A1B125032F643998002B5903 /* Session.swift */,
 				A1131BB82F17E63100F99D2F /* ActivityLog.swift */,
 			);
@@ -177,9 +210,8 @@
 		A1131B4B2F16682400F99D2F /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A1B1252E2F68114F002B5903 /* SignInView.swift */,
-				A1B1252C2F681144002B5903 /* SignUpView.swift */,
-				A1B1252A2F68113A002B5903 /* AuthView.swift */,
+				A1B1255E2F683B87002B5903 /* Goals */,
+				A1B125542F682EDE002B5903 /* Sleep */,
 				A1B125052F6439C5002B5903 /* Sessions */,
 				A1131B5A2F1668D700F99D2F /* Components */,
 				A1131B592F1668CC00F99D2F /* SettingsView.swift */,
@@ -194,7 +226,9 @@
 		A1131B4C2F16682D00F99D2F /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
-				A1131B562F1668B600F99D2F /* OnboardingView.swift */,
+				A1B1252E2F68114F002B5903 /* SignInView.swift */,
+				A1B1252C2F681144002B5903 /* SignUpView.swift */,
+				A1B1252A2F68113A002B5903 /* AuthView.swift */,
 			);
 			path = Onboarding;
 			sourceTree = "<group>";
@@ -218,19 +252,13 @@
 		A1131B4F2F16684100F99D2F /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				A1B1255C2F683B79002B5903 /* GoalsStore.swift */,
+				A1B125522F682ECF002B5903 /* DailyCheckInStore.swift */,
 				A1B124ED2F61CDD0002B5903 /* TodaySessionsStore.swift */,
 				A1B124E22F61C51B002B5903 /* DayDashboardStore.swift */,
 				A1131B542F1668A500F99D2F /* SessionViewModel.swift */,
 			);
 			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		A1131B512F16684E00F99D2F /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				A1B124E42F61C535002B5903 /* DayKey.swift */,
-			);
-			path = Utils;
 			sourceTree = "<group>";
 		};
 		A1131B5A2F1668D700F99D2F /* Components */ = {
@@ -246,22 +274,19 @@
 		A1B1247A2F390DC3002B5903 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A1B125632F6841B6002B5903 /* Goals */,
+				A1B125572F682F3B002B5903 /* DailyInputsAPI.swift */,
+				A1B1254C2F6825BE002B5903 /* SmartPlanning */,
 				A1B124E92F61C7E4002B5903 /* FirebaseBootstrapper.swift */,
-				A1B1249B2F3CCDD7002B5903 /* API */,
 			);
 			path = Services;
-			sourceTree = "<group>";
-		};
-		A1B1249B2F3CCDD7002B5903 /* API */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = API;
 			sourceTree = "<group>";
 		};
 		A1B124E62F61C553002B5903 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A1B1254F2F682646002B5903 /* ScheduledPlanCard.swift */,
+				A1B125442F6822C5002B5903 /* SmartPlanCard.swift */,
 				A1B124E72F61C55C002B5903 /* MetricRing.swift */,
 			);
 			path = Components;
@@ -272,6 +297,48 @@
 			children = (
 			);
 			path = Sessions;
+			sourceTree = "<group>";
+		};
+		A1B1254C2F6825BE002B5903 /* SmartPlanning */ = {
+			isa = PBXGroup;
+			children = (
+				A1B1254D2F6825C8002B5903 /* PlanScheduler.swift */,
+				A1B125482F68259F002B5903 /* CalendarAvailabilityService.swift */,
+			);
+			path = SmartPlanning;
+			sourceTree = "<group>";
+		};
+		A1B125542F682EDE002B5903 /* Sleep */ = {
+			isa = PBXGroup;
+			children = (
+				A1B125552F682EE2002B5903 /* SleepCheckInView.swift */,
+			);
+			path = Sleep;
+			sourceTree = "<group>";
+		};
+		A1B125592F6831ED002B5903 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				A1B1255A2F683201002B5903 /* AppNotifications.swift */,
+				A1B124E42F61C535002B5903 /* DayKey.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		A1B1255E2F683B87002B5903 /* Goals */ = {
+			isa = PBXGroup;
+			children = (
+				A1B1255F2F683B8E002B5903 /* GoalsView.swift */,
+			);
+			path = Goals;
+			sourceTree = "<group>";
+		};
+		A1B125632F6841B6002B5903 /* Goals */ = {
+			isa = PBXGroup;
+			children = (
+				A1B125612F6841B0002B5903 /* GoalProgressService.swift */,
+			);
+			path = Goals;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -398,7 +465,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B125512F68289E002B5903 /* HABITUS-Info.plist in Resources */,
 				A1131B272F1667F900F99D2F /* Assets.xcassets in Resources */,
+				A1B1255B2F683201002B5903 /* AppNotifications.swift in Resources */,
 				A1B124C12F4C7CEB002B5903 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -426,27 +495,40 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B1254E2F6825C8002B5903 /* PlanScheduler.swift in Sources */,
 				A1B125042F64399B002B5903 /* Session.swift in Sources */,
 				A1131BBB2F17EC8900F99D2F /* ActivityRow.swift in Sources */,
 				A1131B632F17CD3D00F99D2F /* SettingsView.swift in Sources */,
 				A1B124EE2F61CDD6002B5903 /* TodaySessionsStore.swift in Sources */,
 				A1B124E82F61C581002B5903 /* MetricRing.swift in Sources */,
 				A1131B5D2F166E7D00F99D2F /* HabitusApp.swift in Sources */,
+				A1B1253D2F681CB7002B5903 /* Goal.swift in Sources */,
 				A1B124EA2F61C7E4002B5903 /* FirebaseBootstrapper.swift in Sources */,
 				A1131B642F17CD4400F99D2F /* LogActivityView.swift in Sources */,
+				A1B1254B2F6825AB002B5903 /* ScheduledPlanItem.swift in Sources */,
 				A1B1252B2F68113A002B5903 /* AuthView.swift in Sources */,
+				A1B125472F682587002B5903 /* TimeSlot.swift in Sources */,
 				A1131B602F17CD1600F99D2F /* SessionViewModel.swift in Sources */,
 				A1131B652F17CD4900F99D2F /* DashboardView.swift in Sources */,
 				A1B124E32F61C51B002B5903 /* DayDashboardStore.swift in Sources */,
 				A1131B5E2F166E7D00F99D2F /* RootView.swift in Sources */,
+				A1B125622F6841B0002B5903 /* GoalProgressService.swift in Sources */,
+				A1B1255D2F683B79002B5903 /* GoalsStore.swift in Sources */,
+				A1B125532F682ED5002B5903 /* DailyCheckInStore.swift in Sources */,
 				A1B124F02F61CDE4002B5903 /* SessionRowView.swift in Sources */,
+				A1B125502F682646002B5903 /* ScheduledPlanCard.swift in Sources */,
+				A1B125562F682EE7002B5903 /* SleepCheckInView.swift in Sources */,
 				A1131B622F17CD3900F99D2F /* StatCard.swift in Sources */,
 				A1B1252F2F68114F002B5903 /* SignInView.swift in Sources */,
-				A1131B612F17CD1E00F99D2F /* OnboardingView.swift in Sources */,
+				A1B125492F68259F002B5903 /* CalendarAvailabilityService.swift in Sources */,
 				A1B1252D2F681144002B5903 /* SignUpView.swift in Sources */,
+				A1B125452F6822C5002B5903 /* SmartPlanCard.swift in Sources */,
+				A1B125412F68229D002B5903 /* SmartPlan.swift in Sources */,
 				A1B124E52F61C535002B5903 /* DayKey.swift in Sources */,
+				A1B125602F683B8E002B5903 /* GoalsView.swift in Sources */,
 				A1131B5F2F17CD0900F99D2F /* MainTabView.swift in Sources */,
 				A1131BB92F17EA9700F99D2F /* ActivityLog.swift in Sources */,
+				A1B125582F682F3B002B5903 /* DailyInputsAPI.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -532,6 +614,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "HABITUS uses your calendar to detect busy blocks and suggest the best times for wellness activities.";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -589,6 +672,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "HABITUS uses your calendar to detect busy blocks and suggest the best times for wellness activities.";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -609,6 +693,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "HABITUS-Info.plist";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = Yes;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -637,6 +722,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "HABITUS-Info.plist";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = Yes;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

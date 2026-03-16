@@ -18,9 +18,10 @@ struct LogActivityView: View {
 
     @State private var type: String = "Strength"
     @State private var duration: Double = 45
+    @State private var distanceKm: Double = 5
     @State private var intensity: Double = 6
 
-    private let functions = Functions.functions()
+    private let functions = Functions.functions(region: "us-central1")
 
     private let types = ["Strength", "Run", "Hyrox", "Mobility", "Yoga", "Walk", "Other"]
 
@@ -39,6 +40,16 @@ struct LogActivityView: View {
                             .foregroundStyle(.secondary)
                     }
                     Slider(value: $duration, in: 5...180, step: 5)
+
+                    if type == "Run" {
+                        HStack {
+                            Text("Distance (km)")
+                            Spacer()
+                            Text(String(format: "%.1f", distanceKm))
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $distanceKm, in: 0.5...30, step: 0.5)
+                    }
 
                     HStack {
                         Text("Intensity (1–10)")
@@ -102,7 +113,14 @@ struct LogActivityView: View {
                 "baselineSleepHours": 7.5
             ]
 
-            _ = try await functions.httpsCallable("logSession").call(payload)
+            _ = try await functions
+                .httpsCallable("logSession")
+                .call(payload)
+
+            await GoalProgressService.updateProgress(
+                for: type,
+                distanceKm: type == "Run" ? distanceKm : nil
+            )
 
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)

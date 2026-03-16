@@ -18,7 +18,7 @@ struct SettingsView: View {
     @State private var showSaved = false
     @State private var errorMessage: String?
 
-    private let functions = Functions.functions()
+    private let functions = Functions.functions(region: "us-central1")
 
     var body: some View {
         NavigationStack {
@@ -30,6 +30,7 @@ struct SettingsView: View {
                         Text(String(format: "%.1f", sleepHours))
                             .foregroundStyle(.secondary)
                     }
+
                     Slider(value: $sleepHours, in: 0...12, step: 0.5)
 
                     HStack {
@@ -38,9 +39,23 @@ struct SettingsView: View {
                         Text("\(Int(sleepQuality))/5")
                             .foregroundStyle(.secondary)
                     }
+
                     Slider(value: $sleepQuality, in: 1...5, step: 1)
 
-                    Toggle("Rest Day", isOn: $hadRestDay)
+                    Toggle("Rest Day Yesterday", isOn: $hadRestDay)
+                }
+
+                Section("Planning") {
+                    NavigationLink {
+                        GoalsView()
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Weekly Goals")
+                            Text("Set training, run, mobility, and meditation targets")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 if let errorMessage {
@@ -89,7 +104,7 @@ struct SettingsView: View {
                 "dateKey": DayKey.todayUTC(),
                 "sleepHours": sleepHours,
                 "sleepQuality": Int(sleepQuality),
-                "hadRestDay": hadRestDay,
+                "hadRestDay": hadRestDay
             ]
 
             _ = try await functions

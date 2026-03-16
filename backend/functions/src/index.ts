@@ -11,6 +11,8 @@ import {
   STRAIN_A,
 } from "./engines/strainEngine";
 import {computeRecommendation} from "./engines/recommendationEngine";
+import {buildSmartPlan} from "./engines/smartPlanningEngine";
+import {GoalInput, PlannerInput} from "./engines/plannerTypes";
 import {yesterdayKeyUTC} from "./utils/dateKey";
 
 initializeApp();
@@ -326,3 +328,109 @@ export const setDailyInputs = onCall(async (request) => {
 
   return {dateKey, recovery: recoveryResult, recommendation};
 });
+
+/**
+ * Builds a Smart Plan for the requested day using stored day inputs
+ * plus any lightweight goal payload sent from the client.
+ */
+
+type RawGoal = {
+  type?: unknown;
+  targetValue?: unknown;
+  currentValue?: unknown;
+};
+
+export const getPlanForUser = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const data = request.data ?? {};
+  const dateKey = String(data.dateKey ?? "").trim();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "dateKey must be YYYY-MM-DD."
+    );
+  }
+
+  const userRef = db.collection("users").doc(uid);
+  const dayRef = userRef.collection("days").doc(dateKey);
+  const daySnap = await dayRef.get();
+
+  if (!daySnap.exists) {
+    await dayRef.set(buildDefaultDayDoc(dateKey), {merge: true});
+  }
+
+  const freshDaySnap = await dayRef.get();
+
+  const strain = Number(freshDaySnap.get("strain.score") ?? 0);
+  const recovery = Number(freshDaySnap.get("recovery.score") ?? 0);
+  const recoveryState = String(
+    freshDaySnap.get("recovery.state") ?? "yellow"
+  ) as "red" | "yellow" | "green";
+  const sleepHours = Number(freshDaySnap.get("inputs.sleepHours") ?? 0);
+  const sleepQuality = Number(freshDaySnap.get("inputs.sleepQuality") ?? 3);
+  const hadRestDay = Boolean(freshDaySnap.get("inputs.hadRestDay") ?? false);
+  const completedSessionsToday = Number(
+    freshDaySnap.get("strain.sessionCount") ?? 0
+  );
+
+  const goalsRaw: RawGoal[] = Array.isArray(data.goals) ?
+    (data.goals as RawGoal[]) :
+    [];
+
+  const validGoalTypes: GoalInput["type"][] = [
+    "workoutCount",
+    "runDistance",
+    "mobilitySessions",
+    "recoverySessions",
+    "meditationSessions",
+  ];
+
+  const goals: GoalInput[] = goalsRaw
+    .map((g: RawGoal) => ({
+      type: String(g.type ?? ""),
+      targetValue: Number(g.targetValue ?? 0),
+      currentValue: Number(g.currentValue ?? 0),
+    }))
+    .filter((g): g is GoalInput =>
+      validGoalTypes.includes(g.type as GoalInput["type"]) &&
+      Number.isFinite(g.targetValue) &&
+      Number.isFinite(g.currentValue)
+    );
+
+  const plannerInput: PlannerInput = {
+    dateKey,
+    strain,
+    recovery,
+    recoveryState,
+    sleepHours,
+    sleepQuality,
+    hadRestDay,
+    goals,
+    completedSessionsToday,
+  };
+
+  const plan = buildSmartPlan(plannerInput);
+
+  await dayRef.set(
+    {
+      updatedAt: FieldValue.serverTimestamp(),
+      smartPlan: {
+        summary: plan.summary,
+        items: plan.items,
+      },
+    },
+    {merge: true}
+  );
+
+  return {
+    dateKey,
+    smartPlan: plan,
+  };
+});
+
+
