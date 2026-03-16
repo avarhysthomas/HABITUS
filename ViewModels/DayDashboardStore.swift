@@ -26,9 +26,6 @@ final class DayDashboardStore: ObservableObject {
 
     func startListening(dateKey: String) {
         Task {
-            if Auth.auth().currentUser == nil {
-                _ = try? await Auth.auth().signInAnonymously()
-            }
 
             guard let uid = Auth.auth().currentUser?.uid else { return }
 

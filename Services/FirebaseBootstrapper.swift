@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseCore
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseFunctions
@@ -14,26 +13,12 @@ import FirebaseFunctions
 @MainActor
 final class FirebaseBootstrapper: ObservableObject {
     @Published var isReady = false
-    @Published var uid: String?
 
     private let useEmulators = false
 
     func start() async {
         configureFirebaseTargets()
-
-        #if DEBUG
-        try? Auth.auth().signOut()
-        #endif
-
-        do {
-            let result = try await Auth.auth().signInAnonymously()
-            self.uid = result.user.uid
-            print("✅ Signed in anonymously:", result.user.uid)
-            self.isReady = true
-        } catch {
-            print("❌ Anonymous sign-in failed:", error)
-            self.isReady = false
-        }
+        isReady = true
     }
 
     private func configureFirebaseTargets() {
