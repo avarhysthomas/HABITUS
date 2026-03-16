@@ -5,7 +5,6 @@
 //  Created by Ava Thomas on 11/03/2026.
 //
 
-
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
@@ -13,8 +12,15 @@ import FirebaseFirestore
 @MainActor
 final class DayDashboardStore: ObservableObject {
     @Published var strainScore: Double = 0.0
+    @Published var sessionCount: Int = 0
+
     @Published var recoveryScore: Double? = nil
+    @Published var recoveryState: String = "--"
     @Published var recoveryGuidance: String = "Add sleep soon"
+
+    @Published var recommendationTitle: String = ""
+    @Published var recommendationSubtitle: String = ""
+    @Published var recommendationType: String = ""
 
     private var listener: ListenerRegistration?
 
@@ -36,19 +42,31 @@ final class DayDashboardStore: ObservableObject {
 
             listener = ref.addSnapshotListener { [weak self] snapshot, error in
                 guard let self else { return }
+
                 if let error {
                     print("Day listener error:", error)
                     return
                 }
 
-                guard let data = snapshot?.data() else { return }
+                let data = snapshot?.data() ?? [:]
 
                 if let strain = data["strain"] as? [String: Any] {
                     if let score = strain["score"] as? NSNumber {
                         self.strainScore = score.doubleValue
                     } else if let score = strain["score"] as? Double {
                         self.strainScore = score
+                    } else {
+                        self.strainScore = 0
                     }
+
+                    if let count = strain["sessionCount"] as? NSNumber {
+                        self.sessionCount = count.intValue
+                    } else {
+                        self.sessionCount = 0
+                    }
+                } else {
+                    self.strainScore = 0
+                    self.sessionCount = 0
                 }
 
                 if let recovery = data["recovery"] as? [String: Any] {
@@ -56,14 +74,26 @@ final class DayDashboardStore: ObservableObject {
                         self.recoveryScore = score.doubleValue
                     } else if let score = recovery["score"] as? Double {
                         self.recoveryScore = score
+                    } else {
+                        self.recoveryScore = nil
                     }
 
-                    if let guidance = recovery["guidance"] as? String {
-                        self.recoveryGuidance = guidance
-                    }
+                    self.recoveryState = recovery["state"] as? String ?? "--"
+                    self.recoveryGuidance = recovery["guidance"] as? String ?? "Add sleep soon"
                 } else {
                     self.recoveryScore = nil
+                    self.recoveryState = "--"
                     self.recoveryGuidance = "Add sleep soon"
+                }
+
+                if let recommendation = data["recommendation"] as? [String: Any] {
+                    self.recommendationTitle = recommendation["title"] as? String ?? ""
+                    self.recommendationSubtitle = recommendation["subtitle"] as? String ?? ""
+                    self.recommendationType = recommendation["type"] as? String ?? ""
+                } else {
+                    self.recommendationTitle = ""
+                    self.recommendationSubtitle = ""
+                    self.recommendationType = ""
                 }
             }
         }

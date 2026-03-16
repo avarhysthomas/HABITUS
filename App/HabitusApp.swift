@@ -11,7 +11,6 @@ import FirebaseCore
 @main
 struct HABITUSApp: App {
     @StateObject private var bootstrapper = FirebaseBootstrapper()
-    @StateObject private var metricsStore = MetricsStore()
 
     init() {
         FirebaseApp.configure()

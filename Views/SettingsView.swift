@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseFunctions
 
 struct SettingsView: View {
-    private let tester = BackendTest()
-
     @State private var sleepHours: Double = 7.5
     @State private var sleepQuality: Double = 3
     @State private var hadRestDay: Bool = false
@@ -17,6 +17,8 @@ struct SettingsView: View {
     @State private var isSaving = false
     @State private var showSaved = false
     @State private var errorMessage: String?
+
+    private let functions = Functions.functions()
 
     var body: some View {
         NavigationStack {
@@ -68,44 +70,42 @@ struct SettingsView: View {
                     }
                     .disabled(isSaving)
                 }
-
-#if DEBUG
-                Section("Debug") {
-                    Button("Run logSession test") {
-                        Task { await tester.runLogSessionTest() }
-                    }
-
-                    Button("Run setDailyInputs test") {
-                        Task {
-                            await tester.runSetDailyInputs(
-                                sleepHours: sleepHours,
-                                sleepQuality: Int(sleepQuality),
-                                hadRestDay: hadRestDay
-                            )
-                        }
-                    }
-                }
-#endif
             }
             .navigationTitle("Settings")
         }
     }
 
     private func updateRecovery() async {
+        guard Auth.auth().currentUser != nil else {
+            errorMessage = "You’re not signed in yet. Please try again."
+            return
+        }
+
         isSaving = true
         errorMessage = nil
 
-        await tester.runSetDailyInputs(
-            sleepHours: sleepHours,
-            sleepQuality: Int(sleepQuality),
-            hadRestDay: hadRestDay
-        )
+        do {
+            let payload: [String: Any] = [
+                "dateKey": DayKey.todayUTC(),
+                "sleepHours": sleepHours,
+                "sleepQuality": Int(sleepQuality),
+                "hadRestDay": hadRestDay,
+            ]
 
-        isSaving = false
-        showSaved = true
+            _ = try await functions
+                .httpsCallable("setDailyInputs")
+                .call(payload)
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            showSaved = false
+            isSaving = false
+            showSaved = true
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                showSaved = false
+            }
+        } catch {
+            isSaving = false
+            errorMessage = "Failed to update recovery. Please try again."
+            print("❌ setDailyInputs failed:", error)
         }
     }
 }
