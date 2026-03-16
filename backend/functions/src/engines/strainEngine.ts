@@ -1,27 +1,24 @@
 export type Modality = "HIIT" | "Endurance" | "Strength" | "Mobility";
 
-export const STRAIN_A = 0.004; // compression constant for strain score
+export const STRAIN_A = 0.004;
 
 export interface StrainInput {
   durationMinutes: number; // minutes
-  rpe: number;             // 0..10
+  rpe: number; // 0..10
   modality: Modality;
-
-  sleepHours: number;      // hours
-  sleepQuality: number;    // 1..5
-
-  baselineSleepHours?: number; // hb, default 7.5
+  sleepHours: number; // hours
+  sleepQuality: number; // 1..5
+  baselineSleepHours?: number; // default 7.5
 }
 
 export interface StrainResult {
-  L_base: number;
-  L_mod: number;
-  S_f: number;
-  L_adj: number;
-  strainScore_0_21: number;
+  lBase: number;
+  lMod: number;
+  sF: number;
+  lAdj: number;
+  strainScore021: number;
 }
 
-// --- constants from your document ---
 const MODALITY_MULTIPLIER: Record<Modality, number> = {
   HIIT: 1.15,
   Endurance: 1.0,
@@ -37,17 +34,21 @@ const K3 = 0.06;
 const SF_MIN = 0.8;
 const SF_MAX = 1.3;
 
-function clamp(x: number, lo: number, hi: number) {
+/**
+ * Clamps a numeric value between lower and upper bounds.
+ * @param {number} x Value to clamp.
+ * @param {number} lo Lower bound.
+ * @param {number} hi Upper bound.
+ * @return {number} Clamped value.
+ */
+function clamp(x: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, x));
 }
 
 /**
- * Implements dissertation strain model:
- * 1) L_base = duration × RPE
- * 2) L_mod  = L_base × M
- * 3) S_f    = clamp(0.8..1.3, 1 + k1*(hb-h)/hb - k2*(h-hb)/hb + k3*(3-q))
- * 4) L_adj  = L_mod × S_f
- * 5) Strain = 21 × (1 - e^(-a × L_adj))
+ * Computes the dissertation strain model for a single session.
+ * @param {StrainInput} input Session and sleep inputs used in the model.
+ * @return {StrainResult} Intermediate load values and final strain score.
  */
 export function computeStrain(input: StrainInput): StrainResult {
   const duration = Math.max(0, input.durationMinutes);
@@ -57,34 +58,27 @@ export function computeStrain(input: StrainInput): StrainResult {
   const q = clamp(input.sleepQuality, 1, 5);
   const hb = input.baselineSleepHours ?? HB_DEFAULT;
 
-  // Step 1
-  const L_base = duration * rpe;
+  const lBase = duration * rpe;
 
-  // Step 2
-  const M = MODALITY_MULTIPLIER[input.modality] ?? 1.0;
-  const L_mod = L_base * M;
+  const modalityMultiplier = MODALITY_MULTIPLIER[input.modality] ?? 1.0;
+  const lMod = lBase * modalityMultiplier;
 
-  // Step 3 (as written in your doc)
-  // 1 + k1*(hb-h)/hb - k2*(h-hb)/hb + k3*(3-q)
   const sfRaw =
     1 +
     K1 * ((hb - h) / hb) -
     K2 * ((h - hb) / hb) +
     K3 * (3 - q);
 
-  const S_f = clamp(sfRaw, SF_MIN, SF_MAX);
+  const sF = clamp(sfRaw, SF_MIN, SF_MAX);
 
-  // Step 4
-  const L_adj = L_mod * S_f;
-
-  // Step 5 (0–21 compression)
-  const strainScore_0_21 = 21 * (1 - Math.exp(-STRAIN_A * L_adj));
+  const lAdj = lMod * sF;
+  const strainScore021 = 21 * (1 - Math.exp(-STRAIN_A * lAdj));
 
   return {
-    L_base,
-    L_mod,
-    S_f,
-    L_adj,
-    strainScore_0_21,
+    lBase,
+    lMod,
+    sF,
+    lAdj,
+    strainScore021,
   };
 }
