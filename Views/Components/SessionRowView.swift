@@ -5,7 +5,6 @@
 //  Created by Ava Thomas on 11/03/2026.
 //
 
-
 import SwiftUI
 
 struct SessionRowView: View {
@@ -13,34 +12,21 @@ struct SessionRowView: View {
 
     var body: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.modalityLabel)
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(item.modality)
+                    .font(.title3.weight(.semibold))
 
-                Text("\(item.durationMinutes) min X Intensity \(item.rpe)/10")
-                    .font(.subheadline)
+                Text("\(item.durationMinutes) min × RPE \(item.rpe)")
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            Text(String(format: "+%.1f", item.score))
-                .font(.headline)
+            Text("+\(String(format: "%.1f", item.score))")
+                .font(.title3.weight(.bold))
         }
-        .padding()
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-    }
-}
-
-private extension SessionRowItem {
-    var modalityLabel: String {
-        switch modality {
-        case "HIIT": return "Hyrox"
-        case "Endurance": return "Run"
-        case "Strength": return "Strength"
-        case "Mobility": return "Mobility"
-        default: return modality
-        }
+        .padding(20)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 }

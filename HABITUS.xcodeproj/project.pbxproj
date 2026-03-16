@@ -23,8 +23,6 @@
 		A1B124B02F4C79AF002B5903 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B124AF2F4C79AF002B5903 /* FirebaseCore */; };
 		A1B124B22F4C79AF002B5903 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A1B124B12F4C79AF002B5903 /* FirebaseFirestore */; };
 		A1B124B42F4C79AF002B5903 /* FirebaseFunctions in Frameworks */ = {isa = PBXBuildFile; productRef = A1B124B32F4C79AF002B5903 /* FirebaseFunctions */; };
-		A1B124B62F4C79E9002B5903 /* FirebaseEmulatorConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B124B52F4C79E2002B5903 /* FirebaseEmulatorConfig.swift */; };
-		A1B124B82F4C7A1B002B5903 /* BackendTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B124B72F4C7A1B002B5903 /* BackendTest.swift */; };
 		A1B124C02F4C7CEB002B5903 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B124BF2F4C7CEB002B5903 /* GoogleService-Info.plist */; };
 		A1B124C12F4C7CEB002B5903 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B124BF2F4C7CEB002B5903 /* GoogleService-Info.plist */; };
 		A1B124C22F4C7CEB002B5903 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B124BF2F4C7CEB002B5903 /* GoogleService-Info.plist */; };
@@ -71,8 +69,6 @@
 		A1131BB82F17E63100F99D2F /* ActivityLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityLog.swift; sourceTree = "<group>"; };
 		A1131BBA2F17EC8200F99D2F /* ActivityRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityRow.swift; sourceTree = "<group>"; };
 		A1B124A42F3CD256002B5903 /* HABITUS-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "HABITUS-Info.plist"; sourceTree = "<group>"; };
-		A1B124B52F4C79E2002B5903 /* FirebaseEmulatorConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseEmulatorConfig.swift; sourceTree = "<group>"; };
-		A1B124B72F4C7A1B002B5903 /* BackendTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendTest.swift; sourceTree = "<group>"; };
 		A1B124BF2F4C7CEB002B5903 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A1B124E22F61C51B002B5903 /* DayDashboardStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayDashboardStore.swift; sourceTree = "<group>"; };
 		A1B124E42F61C535002B5903 /* DayKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayKey.swift; sourceTree = SOURCE_ROOT; };
@@ -242,8 +238,6 @@
 			isa = PBXGroup;
 			children = (
 				A1B124E92F61C7E4002B5903 /* FirebaseBootstrapper.swift */,
-				A1B124B72F4C7A1B002B5903 /* BackendTest.swift */,
-				A1B124B52F4C79E2002B5903 /* FirebaseEmulatorConfig.swift */,
 				A1B1249B2F3CCDD7002B5903 /* API */,
 			);
 			path = Services;
@@ -427,7 +421,6 @@
 				A1131BBB2F17EC8900F99D2F /* ActivityRow.swift in Sources */,
 				A1131B632F17CD3D00F99D2F /* SettingsView.swift in Sources */,
 				A1B124EE2F61CDD6002B5903 /* TodaySessionsStore.swift in Sources */,
-				A1B124B82F4C7A1B002B5903 /* BackendTest.swift in Sources */,
 				A1B124E82F61C581002B5903 /* MetricRing.swift in Sources */,
 				A1131B5D2F166E7D00F99D2F /* HabitusApp.swift in Sources */,
 				A1B124EA2F61C7E4002B5903 /* FirebaseBootstrapper.swift in Sources */,
@@ -439,7 +432,6 @@
 				A1B124F02F61CDE4002B5903 /* SessionRowView.swift in Sources */,
 				A1131B622F17CD3900F99D2F /* StatCard.swift in Sources */,
 				A1131B612F17CD1E00F99D2F /* OnboardingView.swift in Sources */,
-				A1B124B62F4C79E9002B5903 /* FirebaseEmulatorConfig.swift in Sources */,
 				A1B124E52F61C535002B5903 /* DayKey.swift in Sources */,
 				A1131B5F2F17CD0900F99D2F /* MainTabView.swift in Sources */,
 				A1131BB92F17EA9700F99D2F /* ActivityLog.swift in Sources */,

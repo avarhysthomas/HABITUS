@@ -93,7 +93,7 @@ struct LogActivityView: View {
 
         do {
             let payload: [String: Any] = [
-                "dateKey": todayKeyUTC(),
+                "dateKey": DayKey.todayUTC(),
                 "durationMinutes": Int(duration),
                 "rpe": Int(intensity),
                 "modality": backendModality(for: type),

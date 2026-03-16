@@ -9,7 +9,6 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var session = SessionViewModel()
-    @StateObject private var metrics = MetricsStore()
 
     var body: some View {
         Group {
@@ -20,6 +19,5 @@ struct RootView: View {
             }
         }
         .environmentObject(session)
-        .environmentObject(metrics)
     }
 }
