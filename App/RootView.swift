@@ -12,10 +12,12 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if session.isOnboarded {
+            if !session.isOnboarded {
+                OnboardingView()
+            } else if session.isSignedIn {
                 MainTabView()
             } else {
-                OnboardingView()
+                AuthView()
             }
         }
         .environmentObject(session)

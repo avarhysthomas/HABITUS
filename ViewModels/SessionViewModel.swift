@@ -7,27 +7,44 @@
 
 
 import Foundation
+import FirebaseAuth
 
 @MainActor
 final class SessionViewModel: ObservableObject {
+    @Published var isOnboarded: Bool
+    @Published var user: User?
 
-    @Published var isOnboarded: Bool {
-        didSet { UserDefaults.standard.set(isOnboarded, forKey: Keys.isOnboarded) }
-    }
+    private var authHandle: AuthStateDidChangeListenerHandle?
 
     init() {
-        self.isOnboarded = UserDefaults.standard.bool(forKey: Keys.isOnboarded)
+        self.isOnboarded = UserDefaults.standard.bool(forKey: "isOnboarded")
+        self.user = Auth.auth().currentUser
+
+        authHandle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            self?.user = user
+        }
+    }
+
+    var isSignedIn: Bool {
+        user != nil
     }
 
     func completeOnboarding() {
         isOnboarded = true
+        UserDefaults.standard.set(true, forKey: "isOnboarded")
     }
 
-    func resetOnboarding() {
-        isOnboarded = false
+    func signOut() {
+        do {
+            try Auth.auth().signOut()
+        } catch {
+            print("❌ Sign out failed:", error)
+        }
     }
 
-    private enum Keys {
-        static let isOnboarded = "isOnboarded"
+    deinit {
+        if let authHandle {
+            Auth.auth().removeStateDidChangeListener(authHandle)
+        }
     }
 }
