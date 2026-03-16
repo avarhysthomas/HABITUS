@@ -34,6 +34,7 @@
 		A1B124EA2F61C7E4002B5903 /* FirebaseBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B124E92F61C7E4002B5903 /* FirebaseBootstrapper.swift */; };
 		A1B124EE2F61CDD6002B5903 /* TodaySessionsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B124ED2F61CDD0002B5903 /* TodaySessionsStore.swift */; };
 		A1B124F02F61CDE4002B5903 /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B124EF2F61CDE4002B5903 /* SessionRowView.swift */; };
+		A1B125042F64399B002B5903 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125032F643998002B5903 /* Session.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,7 @@
 		A1B124E92F61C7E4002B5903 /* FirebaseBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseBootstrapper.swift; sourceTree = "<group>"; };
 		A1B124ED2F61CDD0002B5903 /* TodaySessionsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodaySessionsStore.swift; sourceTree = "<group>"; };
 		A1B124EF2F61CDE4002B5903 /* SessionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRowView.swift; sourceTree = "<group>"; };
+		A1B125032F643998002B5903 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -164,6 +166,7 @@
 		A1131B4A2F16681D00F99D2F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A1B125032F643998002B5903 /* Session.swift */,
 				A1131BB82F17E63100F99D2F /* ActivityLog.swift */,
 			);
 			path = Models;
@@ -172,6 +175,7 @@
 		A1131B4B2F16682400F99D2F /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A1B125052F6439C5002B5903 /* Sessions */,
 				A1131B5A2F1668D700F99D2F /* Components */,
 				A1131B592F1668CC00F99D2F /* SettingsView.swift */,
 				A1131B552F1668AF00F99D2F /* MainTabView.swift */,
@@ -258,6 +262,13 @@
 				A1B124E72F61C55C002B5903 /* MetricRing.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		A1B125052F6439C5002B5903 /* Sessions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Sessions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -412,6 +423,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B125042F64399B002B5903 /* Session.swift in Sources */,
 				A1131BBB2F17EC8900F99D2F /* ActivityRow.swift in Sources */,
 				A1131B632F17CD3D00F99D2F /* SettingsView.swift in Sources */,
 				A1B124EE2F61CDD6002B5903 /* TodaySessionsStore.swift in Sources */,
