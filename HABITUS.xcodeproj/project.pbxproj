@@ -51,6 +51,8 @@
 		A1B1255D2F683B79002B5903 /* GoalsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1255C2F683B79002B5903 /* GoalsStore.swift */; };
 		A1B125602F683B8E002B5903 /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1255F2F683B8E002B5903 /* GoalsView.swift */; };
 		A1B125622F6841B0002B5903 /* GoalProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125612F6841B0002B5903 /* GoalProgressService.swift */; };
+		A1B125712F6844E7002B5903 /* GoalProgressRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125702F6844E7002B5903 /* GoalProgressRow.swift */; };
+		A1B125732F684DFA002B5903 /* WeekStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125722F684DFA002B5903 /* WeekStripView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +114,8 @@
 		A1B1255C2F683B79002B5903 /* GoalsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsStore.swift; sourceTree = "<group>"; };
 		A1B1255F2F683B8E002B5903 /* GoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsView.swift; sourceTree = "<group>"; };
 		A1B125612F6841B0002B5903 /* GoalProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalProgressService.swift; sourceTree = "<group>"; };
+		A1B125702F6844E7002B5903 /* GoalProgressRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalProgressRow.swift; sourceTree = "<group>"; };
+		A1B125722F684DFA002B5903 /* WeekStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekStripView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -285,6 +289,8 @@
 		A1B124E62F61C553002B5903 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A1B125722F684DFA002B5903 /* WeekStripView.swift */,
+				A1B125702F6844E7002B5903 /* GoalProgressRow.swift */,
 				A1B1254F2F682646002B5903 /* ScheduledPlanCard.swift */,
 				A1B125442F6822C5002B5903 /* SmartPlanCard.swift */,
 				A1B124E72F61C55C002B5903 /* MetricRing.swift */,
@@ -529,6 +535,8 @@
 				A1131B5F2F17CD0900F99D2F /* MainTabView.swift in Sources */,
 				A1131BB92F17EA9700F99D2F /* ActivityLog.swift in Sources */,
 				A1B125582F682F3B002B5903 /* DailyInputsAPI.swift in Sources */,
+				A1B125712F6844E7002B5903 /* GoalProgressRow.swift in Sources */,
+				A1B125732F684DFA002B5903 /* WeekStripView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -164,21 +164,13 @@ final class DayDashboardStore: ObservableObject {
         listener = nil
     }
 
-    func generateSmartPlan(dateKey: String, goals: [Goal]) async {
+    func generateSmartPlan(dateKey: String) async {
         guard Auth.auth().currentUser != nil else { return }
 
         let functions = Functions.functions(region: "us-central1")
 
         let payload: [String: Any] = [
-            "dateKey": dateKey,
-            "goals": goals.map {
-                [
-                    "type": $0.type.rawValue,
-                    "targetValue": $0.targetValue,
-                    "currentValue": $0.currentValue
-                ]
-            },
-        ]
+            "dateKey": dateKey]
 
         do {
             _ = try await functions

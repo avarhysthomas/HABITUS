@@ -11,17 +11,32 @@ struct DashboardView: View {
     @StateObject private var dayStore = DayDashboardStore()
     @StateObject private var sessionsStore = TodaySessionsStore()
     @StateObject private var goalsStore = GoalsStore()
+    @State private var selectedDate: Date = Date()
 
-    private var today: String {
-        DayKey.todayUTC()
+    private var selectedDateKey: String {
+        DayKey.from(date: selectedDate)
+    }
+
+    private var selectedDayTitle: String {
+        let calendar = Calendar.current
+
+        if calendar.isDateInToday(selectedDate) {
+            return "Today"
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: selectedDate)
     }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Today")
+                    Text(selectedDayTitle)
                         .font(.title2.bold())
+
+                    WeekStripView(selectedDate: $selectedDate)
 
                     VStack(spacing: 16) {
                         MetricRing(
@@ -34,7 +49,9 @@ struct DashboardView: View {
                         MetricRing(
                             title: "Recovery",
                             valueText: recoveryValueText,
-                            subtitle: dayStore.recoveryGuidance.isEmpty ? "Add sleep soon" : dayStore.recoveryGuidance,
+                            subtitle: dayStore.recoveryGuidance.isEmpty ?
+                                "Add sleep soon" :
+                                dayStore.recoveryGuidance,
                             progress: recoveryProgress,
                             color: recoveryColor
                         )
@@ -77,9 +94,31 @@ struct DashboardView: View {
                         }
                     }
 
+                    if !goalsStore.goals.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Weekly Progress")
+                                .font(.headline)
+
+                            VStack(alignment: .leading, spacing: 14) {
+                                ForEach(goalsStore.goals) { goal in
+                                    GoalProgressRow(
+                                        title: goal.type.title,
+                                        currentValue: goal.currentValue,
+                                        targetValue: goal.targetValue,
+                                        unit: goal.type.unit
+                                    )
+                                }
+                            }
+                            .padding(20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color(.secondarySystemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 24))
+                        }
+                    }
+
                     VStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text("Today’s log")
+                            Text("Day log")
                                 .font(.headline)
 
                             Spacer()
@@ -108,15 +147,12 @@ struct DashboardView: View {
             }
             .navigationTitle("Dashboard")
             .onAppear {
-                dayStore.startListening(dateKey: today)
-                sessionsStore.startListening(dateKey: today)
+                dayStore.startListening(dateKey: selectedDateKey)
+                sessionsStore.startListening(dateKey: selectedDateKey)
                 goalsStore.startListening()
 
                 Task {
-                    await dayStore.generateSmartPlan(
-                        dateKey: today,
-                        goals: goalsStore.goals
-                        )
+                    await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                 }
             }
             .onReceive(
@@ -125,18 +161,23 @@ struct DashboardView: View {
                 )
             ) { _ in
                 Task {
-                    await dayStore.generateSmartPlan(
-                        dateKey: today,
-                        goals: goalsStore.goals
-                    )
+                    await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                 }
             }
             .onChange(of: goalsStore.goals) { _ in
                 Task {
-                    await dayStore.generateSmartPlan(
-                        dateKey: today,
-                        goals: goalsStore.goals
-                    )
+                    await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+                }
+            }
+            .onChange(of: selectedDate) { _ in
+                dayStore.stopListening()
+                sessionsStore.stopListening()
+
+                dayStore.startListening(dateKey: selectedDateKey)
+                sessionsStore.startListening(dateKey: selectedDateKey)
+
+                Task {
+                    await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                 }
             }
             .onDisappear {

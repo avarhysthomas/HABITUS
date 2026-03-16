@@ -1,4 +1,5 @@
 import {onRequest, onCall, HttpsError} from "firebase-functions/v2/https";
+import {onSchedule} from "firebase-functions/v2/scheduler";
 import {setGlobalOptions} from "firebase-functions/v2";
 import cors from "cors";
 import {initializeApp} from "firebase-admin/app";
@@ -13,6 +14,11 @@ import {
 import {computeRecommendation} from "./engines/recommendationEngine";
 import {buildSmartPlan} from "./engines/smartPlanningEngine";
 import {GoalInput, PlannerInput} from "./engines/plannerTypes";
+import {
+  getActiveGoals,
+  updateGoalProgressForSession,
+  resetWeeklyGoalsForAllUsers,
+} from "./services/goalService";
 import {yesterdayKeyUTC} from "./utils/dateKey";
 
 initializeApp();
@@ -116,6 +122,12 @@ export const logSession = onCall(async (request) => {
   }
 
   const data = request.data ?? {};
+
+  const activityType = String(data.activityType ?? "").trim();
+  const distanceKmRaw = Number(data.distanceKm ?? 0);
+  const distanceKm = Number.isFinite(distanceKmRaw) && distanceKmRaw > 0 ?
+    distanceKmRaw :
+    undefined;
 
   const dateKey = String(data.dateKey ?? "").trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
@@ -245,6 +257,10 @@ export const logSession = onCall(async (request) => {
     };
   });
 
+  if (activityType) {
+    await updateGoalProgressForSession(uid, activityType, distanceKm);
+  }
+
   return txnResult;
 });
 
@@ -331,15 +347,8 @@ export const setDailyInputs = onCall(async (request) => {
 
 /**
  * Builds a Smart Plan for the requested day using stored day inputs
- * plus any lightweight goal payload sent from the client.
+ * plus the user’s active weekly goals from Firestore.
  */
-
-type RawGoal = {
-  type?: unknown;
-  targetValue?: unknown;
-  currentValue?: unknown;
-};
-
 export const getPlanForUser = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -378,29 +387,13 @@ export const getPlanForUser = onCall(async (request) => {
     freshDaySnap.get("strain.sessionCount") ?? 0
   );
 
-  const goalsRaw: RawGoal[] = Array.isArray(data.goals) ?
-    (data.goals as RawGoal[]) :
-    [];
+  const activeGoals = await getActiveGoals(uid);
 
-  const validGoalTypes: GoalInput["type"][] = [
-    "workoutCount",
-    "runDistance",
-    "mobilitySessions",
-    "recoverySessions",
-    "meditationSessions",
-  ];
-
-  const goals: GoalInput[] = goalsRaw
-    .map((g: RawGoal) => ({
-      type: String(g.type ?? ""),
-      targetValue: Number(g.targetValue ?? 0),
-      currentValue: Number(g.currentValue ?? 0),
-    }))
-    .filter((g): g is GoalInput =>
-      validGoalTypes.includes(g.type as GoalInput["type"]) &&
-      Number.isFinite(g.targetValue) &&
-      Number.isFinite(g.currentValue)
-    );
+  const goals: GoalInput[] = activeGoals.map((goal) => ({
+    type: goal.type as GoalInput["type"],
+    targetValue: Number(goal.targetValue ?? 0),
+    currentValue: Number(goal.currentValue ?? 0),
+  }));
 
   const plannerInput: PlannerInput = {
     dateKey,
@@ -432,5 +425,16 @@ export const getPlanForUser = onCall(async (request) => {
     smartPlan: plan,
   };
 });
+
+export const resetWeeklyGoals = onSchedule(
+  {
+    schedule: "0 1 * * 1",
+    timeZone: "Europe/London",
+    region: "us-central1",
+  },
+  async () => {
+    await resetWeeklyGoalsForAllUsers();
+  }
+);
 
 

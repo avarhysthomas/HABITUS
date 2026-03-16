@@ -16,3 +16,13 @@ enum DayKey {
         return formatter.string(from: Date())
     }
 }
+
+extension DayKey {
+
+    static func from(date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter.string(from: date)
+    }
+}
