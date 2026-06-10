@@ -61,22 +61,47 @@ struct DayCell: View {
         return formatter.string(from: date)
     }
 
+    private var isToday: Bool {
+        calendar.isDateInToday(date)
+    }
+
     var body: some View {
 
         VStack(spacing: 6) {
 
             Text(dayLetter)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
 
             Text(dayNumber)
                 .font(.headline)
+                .foregroundStyle(isSelected ? .white : .primary)
+
+            Circle()
+                .fill(isToday ? (isSelected ? Color.white : Color.blue) : Color.clear)
+                .frame(width: 5, height: 5)
 
         }
-        .frame(width: 38, height: 52)
+        .frame(width: 42, height: 60)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(isSelected ? Color.primary.opacity(0.1) : Color.clear)
+                .fill(
+                    isSelected ?
+                    LinearGradient(
+                        colors: [Color.blue, Color.blue.opacity(0.75)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ) :
+                    LinearGradient(
+                        colors: [Color.clear],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(isToday && !isSelected ? Color.blue.opacity(0.35) : Color.clear, lineWidth: 1)
         )
     }
 }

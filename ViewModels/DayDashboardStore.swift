@@ -8,7 +8,6 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
-import FirebaseFunctions
 
 @MainActor
 final class DayDashboardStore: ObservableObject {
@@ -167,15 +166,14 @@ final class DayDashboardStore: ObservableObject {
     func generateSmartPlan(dateKey: String) async {
         guard Auth.auth().currentUser != nil else { return }
 
-        let functions = Functions.functions(region: "us-central1")
-
         let payload: [String: Any] = [
             "dateKey": dateKey]
 
         do {
-            _ = try await functions
-                .httpsCallable("getPlanForUser")
-                .call(payload)
+            try await FirebaseCallableRunner.callVoid(
+                "getPlanForUser",
+                payload: payload
+            )
         } catch {
             print("generateSmartPlan error:", error)
         }

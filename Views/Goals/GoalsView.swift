@@ -86,7 +86,7 @@ struct GoalsView: View {
         .onDisappear {
             goalsStore.stopListening()
         }
-        .onChange(of: goalsStore.goals) { _ in
+        .onChange(of: goalsStore.goals) {
             hydrateFromExistingGoals()
         }
     }

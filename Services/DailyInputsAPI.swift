@@ -7,11 +7,30 @@
 
 
 import Foundation
-import FirebaseFunctions
+@preconcurrency import FirebaseFunctions
+
+enum FirebaseCallableRunner {
+    static func callVoid(
+        _ name: String,
+        payload: [String: Any],
+        region: String = "us-central1"
+    ) async throws {
+        let callable = Functions.functions(region: region)
+            .httpsCallable(name)
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            callable.call(payload) { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
+}
 
 final class DailyInputsAPI {
-    private let functions = Functions.functions(region: "us-central1")
-
     func save(
         dateKey: String,
         sleepHours: Double,
@@ -25,8 +44,9 @@ final class DailyInputsAPI {
             "hadRestDay": hadRestDay
         ]
 
-        _ = try await functions
-            .httpsCallable("setDailyInputs")
-            .call(payload)
+        try await FirebaseCallableRunner.callVoid(
+            "setDailyInputs",
+            payload: payload
+        )
     }
 }
