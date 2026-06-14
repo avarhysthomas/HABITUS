@@ -74,3 +74,36 @@ Creates visible evidence for the onboarding and personalisation success criteria
 proposal. The stored `users/{uid}` profile document can be shown in Firebase as proof that
 HABITUS captures Office Athlete level, work location, primary goal, and baseline wellbeing
 data before generating the user experience.
+
+## 2026-06-14
+
+### Branch
+`feature/privacy-data-controls`
+
+### Commit message
+`feature(privacy): add account data controls`
+
+### Files changed
+- `HABITUS-Info.plist`
+- `Views/SettingsView.swift`
+- `backend/functions/src/index.ts`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal requirements for GDPR/data privacy best practice and user control over
+wellness data. Adds visible privacy messaging, sign-out access, destructive account/data
+deletion, and a clear calendar permission reason.
+
+### Testing evidence
+- Firebase Functions TypeScript build passed with `npm run build`.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: sign in, open Settings, review the Privacy & Account
+  section, confirm Sign Out returns to authentication, then use a disposable account to test
+  Delete Account and Data and verify the Firebase `users/{uid}` document plus `days`,
+  `sessions`, and `goals` subcollections are removed.
+
+### Dissertation relevance
+Creates direct evidence for the dissertation's ethical and GDPR discussion. The app now gives
+users clear visibility of stored wellness data categories and a demonstrable deletion path for
+profile, goals, daily metrics, logged sessions, and the Firebase Auth account.
