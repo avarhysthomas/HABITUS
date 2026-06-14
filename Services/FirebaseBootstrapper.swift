@@ -30,7 +30,7 @@ final class FirebaseBootstrapper: ObservableObject {
         let settings = db.settings
         settings.host = "127.0.0.1:8080"
         settings.isSSLEnabled = false
-        settings.isPersistenceEnabled = false
+        settings.cacheSettings = MemoryCacheSettings()
         db.settings = settings
 
         Functions.functions(region: "us-central1")

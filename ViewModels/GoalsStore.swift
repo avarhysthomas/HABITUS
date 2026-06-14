@@ -97,7 +97,7 @@ final class GoalsStore: ObservableObject {
             "targetValue": targetValue,
             "currentValue": currentValue,
             "isActive": true,
-            "weekStart": DayKey.todayUTC(),
+            "weekStart": DayKey.currentWeekStart(),
             "updatedAt": FieldValue.serverTimestamp()
         ]
 

@@ -29,14 +29,30 @@ struct DashboardView: View {
         return formatter.string(from: selectedDate)
     }
 
+    private var selectedDateSubtitle: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM"
+        return formatter.string(from: selectedDate)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    Text(selectedDayTitle)
-                        .font(.title2.bold())
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(selectedDayTitle)
+                                .font(.system(size: 32, weight: .bold, design: .rounded))
 
-                    WeekStripView(selectedDate: $selectedDate)
+                            Text(selectedDateSubtitle)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        WeekStripView(selectedDate: $selectedDate)
+
+                        guidanceHero
+                    }
 
                     VStack(spacing: 16) {
                         MetricRing(
@@ -57,38 +73,30 @@ struct DashboardView: View {
                         )
                     }
 
-                    if !dayStore.recommendationTitle.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Recommended today")
-                                .font(.headline)
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(dayStore.recommendationTitle)
-                                    .font(.title3.weight(.semibold))
-
-                                Text(dayStore.recommendationSubtitle)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                        }
-                    }
-
                     if !dayStore.smartPlanItems.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Smart Plan")
-                                .font(.headline)
+                            sectionHeader(
+                                title: "Today's plan",
+                                subtitle: dayStore.smartPlanSummary.isEmpty ?
+                                    "Suggested sessions based on your current recovery and load." :
+                                    dayStore.smartPlanSummary
+                            )
 
-                            if !dayStore.smartPlanSummary.isEmpty {
-                                Text(dayStore.smartPlanSummary)
+                            if dayStore.scheduledPlanItems.isEmpty && !dayStore.smartPlanItems.isEmpty {
+                                Text("Suggestions shown without calendar scheduling.")
+                                    .font(.caption)
                                     .foregroundStyle(.secondary)
-                            }
 
-                            VStack(spacing: 14) {
-                                ForEach(dayStore.scheduledPlanItems) { item in
-                                    ScheduledPlanCard(item: item)
+                                VStack(spacing: 14) {
+                                    ForEach(dayStore.smartPlanItems) { item in
+                                        SmartPlanCard(item: item)
+                                    }
+                                }
+                            } else {
+                                VStack(spacing: 14) {
+                                    ForEach(dayStore.scheduledPlanItems) { item in
+                                        ScheduledPlanCard(item: item)
+                                    }
                                 }
                             }
                         }
@@ -96,8 +104,10 @@ struct DashboardView: View {
 
                     if !goalsStore.goals.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Weekly Progress")
-                                .font(.headline)
+                            sectionHeader(
+                                title: "Weekly progress",
+                                subtitle: "Track consistency across your goals, not just today's output."
+                            )
 
                             VStack(alignment: .leading, spacing: 14) {
                                 ForEach(goalsStore.goals) { goal in
@@ -117,15 +127,12 @@ struct DashboardView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("Day log")
-                                .font(.headline)
-
-                            Spacer()
-
-                            Text("\(dayStore.sessionCount)")
-                                .foregroundStyle(.secondary)
-                        }
+                        sectionHeader(
+                            title: "Day log",
+                            subtitle: dayStore.sessionCount == 0 ?
+                                "No sessions logged for this day yet." :
+                                "\(dayStore.sessionCount) session\(dayStore.sessionCount == 1 ? "" : "s") logged"
+                        )
 
                         if sessionsStore.sessions.isEmpty {
                             Text("No activities logged yet.")
@@ -164,12 +171,12 @@ struct DashboardView: View {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                 }
             }
-            .onChange(of: goalsStore.goals) { _ in
+            .onChange(of: goalsStore.goals) {
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                 }
             }
-            .onChange(of: selectedDate) { _ in
+            .onChange(of: selectedDate) {
                 dayStore.stopListening()
                 sessionsStore.stopListening()
 
@@ -221,7 +228,95 @@ struct DashboardView: View {
         case ..<14:
             return "Training load in range"
         default:
-            return "High load — prioritise recovery"
+            return "High load prioritise recovery"
         }
+    }
+
+    private var readinessBadgeText: String {
+        if let score = dayStore.recoveryScore {
+            if score >= 70 { return "High readiness" }
+            if score >= 40 { return "Moderate readiness" }
+            return "Recovery focus"
+        }
+
+        return "Awaiting recovery"
+    }
+
+    private var readinessBadgeColor: Color {
+        if let score = dayStore.recoveryScore {
+            if score >= 70 { return .green }
+            if score >= 40 { return .orange }
+            return .red
+        }
+
+        return .gray
+    }
+
+    private var guidanceHero: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(readinessBadgeText.uppercased())
+                .font(.caption.weight(.bold))
+                .tracking(1.1)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(readinessBadgeColor.opacity(0.14))
+                .foregroundStyle(readinessBadgeColor)
+                .clipShape(Capsule())
+
+            Text(dayStore.recommendationTitle.isEmpty ? "Build today's guidance" : dayStore.recommendationTitle)
+                .font(.system(size: 26, weight: .bold, design: .rounded))
+
+            Text(dayStore.recommendationSubtitle.isEmpty ? "Add sleep and recovery inputs to personalise your training plan." : dayStore.recommendationSubtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                summaryPill(label: "Strain", value: String(format: "%.1f", dayStore.strainScore))
+                summaryPill(label: "Recovery", value: recoveryValueText)
+            }
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [
+                    readinessBadgeColor.opacity(0.16),
+                    Color(.secondarySystemBackground)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(Color.white.opacity(0.5), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28))
+    }
+
+    private func sectionHeader(title: String, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.headline)
+
+            Text(subtitle)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func summaryPill(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Text(value)
+                .font(.headline.weight(.semibold))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }

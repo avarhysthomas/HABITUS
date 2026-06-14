@@ -14,7 +14,7 @@ struct MainTabView: View {
     @StateObject private var dailyCheckInStore = DailyCheckInStore()
 
     private var todayDateKey: String {
-        DayKey.todayUTC()
+        DayKey.today()
     }
 
     enum Tab: Hashable {

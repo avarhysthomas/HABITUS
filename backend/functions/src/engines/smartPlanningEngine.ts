@@ -67,7 +67,7 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
     });
 
     return {
-      summary: "High strain — prioritise recovery",
+      summary: "High strain prioritise recovery",
       items: items.slice(0, 3),
     };
   }

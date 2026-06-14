@@ -34,9 +34,16 @@ struct GoalProgressRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(isComplete ? .green : .primary)
+                HStack(spacing: 8) {
+                    if isComplete {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+
+                    Text(title)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(isComplete ? .green : .primary)
+                }
 
                 Spacer()
 
@@ -47,11 +54,6 @@ struct GoalProgressRow: View {
 
             ProgressView(value: progress)
                 .tint(.blue)
-        }
-        
-        if isComplete {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(.green)
         }
     }
 }

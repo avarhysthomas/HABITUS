@@ -43,11 +43,9 @@
 		A1B1254B2F6825AB002B5903 /* ScheduledPlanItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1254A2F6825AB002B5903 /* ScheduledPlanItem.swift */; };
 		A1B1254E2F6825C8002B5903 /* PlanScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1254D2F6825C8002B5903 /* PlanScheduler.swift */; };
 		A1B125502F682646002B5903 /* ScheduledPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1254F2F682646002B5903 /* ScheduledPlanCard.swift */; };
-		A1B125512F68289E002B5903 /* HABITUS-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A1B124A42F3CD256002B5903 /* HABITUS-Info.plist */; };
 		A1B125532F682ED5002B5903 /* DailyCheckInStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125522F682ECF002B5903 /* DailyCheckInStore.swift */; };
 		A1B125562F682EE7002B5903 /* SleepCheckInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125552F682EE2002B5903 /* SleepCheckInView.swift */; };
 		A1B125582F682F3B002B5903 /* DailyInputsAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125572F682F3B002B5903 /* DailyInputsAPI.swift */; };
-		A1B1255B2F683201002B5903 /* AppNotifications.swift in Resources */ = {isa = PBXBuildFile; fileRef = A1B1255A2F683201002B5903 /* AppNotifications.swift */; };
 		A1B1255D2F683B79002B5903 /* GoalsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1255C2F683B79002B5903 /* GoalsStore.swift */; };
 		A1B125602F683B8E002B5903 /* GoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B1255F2F683B8E002B5903 /* GoalsView.swift */; };
 		A1B125622F6841B0002B5903 /* GoalProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125612F6841B0002B5903 /* GoalProgressService.swift */; };
@@ -471,9 +469,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1B125512F68289E002B5903 /* HABITUS-Info.plist in Resources */,
 				A1131B272F1667F900F99D2F /* Assets.xcassets in Resources */,
-				A1B1255B2F683201002B5903 /* AppNotifications.swift in Resources */,
 				A1B124C12F4C7CEB002B5903 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

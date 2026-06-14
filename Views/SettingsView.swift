@@ -7,7 +7,6 @@
 
 import SwiftUI
 import FirebaseAuth
-import FirebaseFunctions
 
 struct SettingsView: View {
     @State private var sleepHours: Double = 7.5
@@ -17,8 +16,6 @@ struct SettingsView: View {
     @State private var isSaving = false
     @State private var showSaved = false
     @State private var errorMessage: String?
-
-    private let functions = Functions.functions(region: "us-central1")
 
     var body: some View {
         NavigationStack {
@@ -101,15 +98,16 @@ struct SettingsView: View {
 
         do {
             let payload: [String: Any] = [
-                "dateKey": DayKey.todayUTC(),
+                "dateKey": DayKey.today(),
                 "sleepHours": sleepHours,
                 "sleepQuality": Int(sleepQuality),
                 "hadRestDay": hadRestDay
             ]
 
-            _ = try await functions
-                .httpsCallable("setDailyInputs")
-                .call(payload)
+            try await FirebaseCallableRunner.callVoid(
+                "setDailyInputs",
+                payload: payload
+            )
 
             isSaving = false
             showSaved = true

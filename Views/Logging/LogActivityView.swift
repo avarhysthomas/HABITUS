@@ -7,7 +7,6 @@
 
 import SwiftUI
 import FirebaseAuth
-import FirebaseFunctions
 
 struct LogActivityView: View {
     @Binding var selectedTab: MainTabView.Tab
@@ -20,8 +19,6 @@ struct LogActivityView: View {
     @State private var duration: Double = 45
     @State private var distanceKm: Double = 5
     @State private var intensity: Double = 6
-
-    private let functions = Functions.functions(region: "us-central1")
 
     private let types = ["Strength", "Run", "Hyrox", "Mobility", "Yoga", "Walk", "Other"]
 
@@ -104,20 +101,19 @@ struct LogActivityView: View {
 
         do {
             let payload: [String: Any] = [
-                "dateKey": DayKey.todayUTC(),
+                "dateKey": DayKey.today(),
                 "durationMinutes": Int(duration),
                 "rpe": Int(intensity),
                 "modality": backendModality(for: type),
-                "sleepHours": 7.5,
-                "sleepQuality": 3,
                 "baselineSleepHours": 7.5,
                 "activityType": type,
                 "distanceKm": type == "Run" ? distanceKm : 0,
             ]
 
-            _ = try await functions
-                .httpsCallable("logSession")
-                .call(payload)
+            try await FirebaseCallableRunner.callVoid(
+                "logSession",
+                payload: payload
+            )
 
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)

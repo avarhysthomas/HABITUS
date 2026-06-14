@@ -183,32 +183,48 @@ export const logSession = onCall(async (request) => {
 
   const baselineSleepHours = Number(data.baselineSleepHours ?? 7.5);
 
+  const userRef = db.collection("users").doc(uid);
+  const dayRef = userRef.collection("days").doc(dateKey);
+  const daySnap = await dayRef.get();
+
+  const storedInputs = daySnap.get("inputs") as Record<string, unknown> | undefined;
+  const effectiveSleepHoursRaw = Number(
+    storedInputs?.sleepHours ?? data.sleepHours ?? 7.5
+  );
+  const effectiveSleepQualityRaw = Number(
+    storedInputs?.sleepQuality ?? data.sleepQuality ?? 3
+  );
+  const effectiveSleepHours = Number.isFinite(effectiveSleepHoursRaw) ?
+    effectiveSleepHoursRaw :
+    7.5;
+  const effectiveSleepQuality = Number.isFinite(effectiveSleepQualityRaw) ?
+    effectiveSleepQualityRaw :
+    3;
+
   const strain = computeStrain({
     durationMinutes,
     rpe,
     modality,
-    sleepHours,
-    sleepQuality,
+    sleepHours: effectiveSleepHours,
+    sleepQuality: effectiveSleepQuality,
     baselineSleepHours,
   });
 
-  const userRef = db.collection("users").doc(uid);
   const sessionRef = userRef.collection("sessions").doc();
-  const dayRef = userRef.collection("days").doc(dateKey);
 
   const compressTo21 = (totalLAdj: number) =>
     21 * (1 - Math.exp(-STRAIN_A * totalLAdj));
 
   const txnResult = await db.runTransaction(async (tx) => {
     const now = FieldValue.serverTimestamp();
-    const daySnap = await tx.get(dayRef);
+    const freshDaySnap = await tx.get(dayRef);
 
-    if (!daySnap.exists) {
+    if (!freshDaySnap.exists) {
       tx.set(dayRef, buildDefaultDayDoc(dateKey), {merge: true});
     }
 
-    const prevTotal = Number(daySnap.get("strain.totalLAdj") ?? 0);
-    const prevCount = Number(daySnap.get("strain.sessionCount") ?? 0);
+    const prevTotal = Number(freshDaySnap.get("strain.totalLAdj") ?? 0);
+    const prevCount = Number(freshDaySnap.get("strain.sessionCount") ?? 0);
 
     const newTotal = prevTotal + strain.lAdj;
     const newScore = compressTo21(newTotal);
@@ -219,8 +235,8 @@ export const logSession = onCall(async (request) => {
       durationMinutes,
       rpe,
       modality,
-      sleepHours,
-      sleepQuality,
+      sleepHours: effectiveSleepHours,
+      sleepQuality: effectiveSleepQuality,
       strain: {
         lBase: r2(strain.lBase),
         lMod: r2(strain.lMod),
@@ -436,5 +452,4 @@ export const resetWeeklyGoals = onSchedule(
     await resetWeeklyGoalsForAllUsers();
   }
 );
-
 

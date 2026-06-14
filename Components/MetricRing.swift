@@ -28,10 +28,10 @@ struct MetricRing: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 18) {
             ZStack {
                 Circle()
-                    .stroke(Color.gray.opacity(0.15), lineWidth: 12)
+                    .stroke(Color.white.opacity(0.35), lineWidth: 12)
 
                 Circle()
                     .trim(from: 0, to: max(0, min(progress, 1)))
@@ -51,17 +51,33 @@ struct MetricRing: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.headline)
+                    .font(.headline.weight(.semibold))
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+                    .foregroundStyle(.secondary.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer()
         }
-        .padding()
-        .background(Color(.systemGray6))
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 28)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.92),
+                            ringColor.opacity(0.08)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(Color.white.opacity(0.45), lineWidth: 1)
+        )
         .clipShape(RoundedRectangle(cornerRadius: 24))
     }
 }
