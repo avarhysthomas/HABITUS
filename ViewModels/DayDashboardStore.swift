@@ -9,6 +9,16 @@ import Foundation
 import FirebaseAuth
 import FirebaseFirestore
 
+struct WeeklyProgressDay: Identifiable, Equatable {
+    let id: String
+    let date: Date
+    let dayLabel: String
+    let strainScore: Double
+    let recoveryScore: Double?
+    let sessionCount: Int
+    let hasData: Bool
+}
+
 @MainActor
 final class DayDashboardStore: ObservableObject {
     @Published var strainScore: Double = 0.0
@@ -26,6 +36,7 @@ final class DayDashboardStore: ObservableObject {
     @Published var smartPlanItems: [SmartPlanItem] = []
 
     @Published var scheduledPlanItems: [ScheduledPlanItem] = []
+    @Published var weeklyProgressDays: [WeeklyProgressDay] = []
 
     private let calendarService = CalendarAvailabilityService()
     private let scheduler = PlanScheduler()
@@ -179,6 +190,75 @@ final class DayDashboardStore: ObservableObject {
         }
     }
 
+    func loadWeeklyProgress(containing date: Date) async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let calendar = Calendar.current
+        guard let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: date)?.start else {
+            weeklyProgressDays = []
+            return
+        }
+
+        let db = Firestore.firestore()
+        var days: [WeeklyProgressDay] = []
+
+        for offset in 0..<7 {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: startOfWeek) else {
+                continue
+            }
+
+            let dateKey = DayKey.from(date: day)
+
+            do {
+                let snapshot = try await db
+                    .collection("users")
+                    .document(uid)
+                    .collection("days")
+                    .document(dateKey)
+                    .getDocument()
+
+                let data = snapshot.data() ?? [:]
+                let strain = data["strain"] as? [String: Any]
+                let recovery = data["recovery"] as? [String: Any]
+                let inputs = data["inputs"] as? [String: Any]
+
+                let strainScore = numberValue(strain?["score"]) ?? 0
+                let recoveryScore = numberValue(recovery?["score"])
+                let sessionCount = Int(numberValue(strain?["sessionCount"]) ?? 0)
+                let sleepHours = numberValue(inputs?["sleepHours"]) ?? 0
+                let hasData = snapshot.exists &&
+                    (sessionCount > 0 || strainScore > 0 || sleepHours > 0)
+
+                days.append(
+                    WeeklyProgressDay(
+                        id: dateKey,
+                        date: day,
+                        dayLabel: dayLabel(for: day),
+                        strainScore: strainScore,
+                        recoveryScore: recoveryScore,
+                        sessionCount: sessionCount,
+                        hasData: hasData
+                    )
+                )
+            } catch {
+                print("Weekly progress load failed for \(dateKey):", error)
+                days.append(
+                    WeeklyProgressDay(
+                        id: dateKey,
+                        date: day,
+                        dayLabel: dayLabel(for: day),
+                        strainScore: 0,
+                        recoveryScore: nil,
+                        sessionCount: 0,
+                        hasData: false
+                    )
+                )
+            }
+        }
+
+        weeklyProgressDays = days
+    }
+
     func schedulePlanItems(for dateKey: String) async {
         guard !smartPlanItems.isEmpty else {
             scheduledPlanItems = []
@@ -216,5 +296,19 @@ final class DayDashboardStore: ObservableObject {
         formatter.timeZone = TimeZone.current
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.date(from: dateKey)
+    }
+
+    private func dayLabel(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "E"
+        return String(formatter.string(from: date).prefix(1))
+    }
+
+    private func numberValue(_ value: Any?) -> Double? {
+        if let number = value as? NSNumber {
+            return number.doubleValue
+        }
+
+        return value as? Double
     }
 }

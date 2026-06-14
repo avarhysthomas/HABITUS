@@ -206,3 +206,35 @@ reference strain, recovery/readiness, intensity control, and unmet weekly goals.
 Reduces the risk that Smart Planning appears hardcoded or arbitrary. This creates visible
 and tested evidence that HABITUS can justify recommendations in terms of the dissertation's
 core metrics and behavioural-planning requirements.
+
+## 2026-06-14
+
+### Branch
+`feature/weekly-progress-visualisation`
+
+### Commit message
+`feature(progress): add weekly strain and recovery visualisation`
+
+### Files changed
+- `ViewModels/DayDashboardStore.swift`
+- `Views/Dashboard/DashboardView.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal requirements for visual feedback, habit tracking, and dashboard-based
+progress summaries. Adds a seven-day dashboard snapshot for strain, recovery, and logged
+session consistency using existing Firestore day documents.
+
+### Testing evidence
+- `npm test` passed with 6/6 backend algorithm tests.
+- Firebase Functions TypeScript build passed as part of `npm test`.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: log activities and sleep check-ins across one or more
+  days, open the dashboard, and confirm the Weekly snapshot card displays daily strain bars,
+  recovery dots, session counts, and aggregate averages.
+
+### Dissertation relevance
+Creates visible evidence for the proposal's visual reinforcement and progress-tracking aims.
+The weekly snapshot makes screenshots more convincing by showing that HABITUS is not only
+reacting to today's input but also summarising recent behaviour patterns.
