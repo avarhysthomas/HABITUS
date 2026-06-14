@@ -32,6 +32,61 @@ function hasRemainingGoal(
 }
 
 /**
+ * Formats a numeric metric for concise user-facing planner rationale.
+ * @param {number} value Metric value.
+ * @param {number} digits Number of decimal places.
+ * @return {string} Formatted metric.
+ */
+function formatMetric(value: number, digits = 0): string {
+  return value.toFixed(digits);
+}
+
+/**
+ * Builds the shared explanation sentence for a generated plan.
+ * @param {PlannerInput} input Planner input payload.
+ * @return {string} User-facing explanation of planner context.
+ */
+function buildPlanSummary(input: PlannerInput): string {
+  const readiness = input.recoveryState;
+  const strain = formatMetric(input.strain, 1);
+  const recovery = formatMetric(input.recovery);
+
+  if (input.strain >= 16 || input.recoveryState === "red") {
+    return "Recovery focus: strain is " + strain +
+      "/21 and readiness is " + readiness +
+      ", so HABITUS is limiting intensity today.";
+  }
+
+  if (input.recovery >= 80 && input.strain <= 10) {
+    return "Training opportunity: recovery is " + recovery +
+      "/100 and strain is " + strain +
+      "/21, so a higher quality session is appropriate.";
+  }
+
+  return "Consistency focus: recovery is " + recovery +
+    "/100 and strain is " + strain +
+    "/21, so HABITUS is prioritising achievable goal progress.";
+}
+
+/**
+ * Creates a concise remaining-goal phrase for plan rationale.
+ * @param {GoalInput[]} goals List of goals passed from the client.
+ * @param {GoalInput["type"]} type Goal type to explain.
+ * @return {string} Remaining-goal explanation.
+ */
+function remainingGoalText(
+  goals: GoalInput[],
+  type: GoalInput["type"]
+): string {
+  const goal = goals.find((g) => g.type === type);
+  if (!goal) return "this supports your weekly goal";
+
+  const remaining = Math.max(goal.targetValue - goal.currentValue, 0);
+  return "you still have " + formatMetric(remaining, 1) +
+    " remaining toward your weekly goal";
+}
+
+/**
  * Builds a Smart Plan for the current day.
  *
  * Uses recovery state, strain level, sleep inputs and
@@ -42,6 +97,7 @@ function hasRemainingGoal(
  */
 export function buildSmartPlan(input: PlannerInput): PlannerResult {
   const items: PlanItem[] = [];
+  const planSummary = buildPlanSummary(input);
 
   if (input.strain >= 16 || input.recoveryState === "red") {
     items.push({
@@ -49,8 +105,9 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
       title: "Recovery session",
       subtitle: "20 min low intensity movement",
       reason:
-        "Your current load is high, so extra" +
-        " intensity is not recommended today.",
+        "Strain is " + formatMetric(input.strain, 1) +
+        "/21 or readiness is red, so this keeps movement gentle while " +
+        "supporting recovery.",
       durationMinutes: 20,
       intensity: 2,
     });
@@ -60,14 +117,14 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
       title: "Walk break",
       subtitle: "10–15 min light movement",
       reason:
-        "A short walk maintains momentum without" +
-        " adding much extra strain.",
+        "A short walk maintains habit momentum without adding much " +
+        "extra strain to a high-load day.",
       durationMinutes: 15,
       intensity: 2,
     });
 
     return {
-      summary: "High strain prioritise recovery",
+      summary: planSummary,
       items: items.slice(0, 3),
     };
   }
@@ -79,8 +136,10 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
         title: "Training session",
         subtitle: "45 min moderate-high intensity",
         reason:
-          "Recovery is high and strain is low, making " +
-          "today a strong training opportunity.",
+          "Recovery is " + formatMetric(input.recovery) +
+          "/100, strain is " + formatMetric(input.strain, 1) +
+          "/21, and " +
+          remainingGoalText(input.goals, "workoutCount") + ".",
         durationMinutes: 45,
         intensity: 7,
       });
@@ -90,8 +149,8 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
         title: "Run session",
         subtitle: "30 min steady effort",
         reason:
-          "You have good readiness today and still have " +
-          "run-distance progress to make this week.",
+          "Recovery is high, strain is low, and " +
+          remainingGoalText(input.goals, "runDistance") + ".",
         durationMinutes: 30,
         intensity: 6,
       });
@@ -101,8 +160,9 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
         title: "Performance session",
         subtitle: "40 min quality effort",
         reason:
-          "Your readiness is high, so HABITUS is " +
-          "suggesting a more demanding session.",
+          "Recovery is " + formatMetric(input.recovery) +
+          "/100 and strain is " + formatMetric(input.strain, 1) +
+          "/21, so HABITUS can safely suggest more intensity.",
         durationMinutes: 40,
         intensity: 7,
       });
@@ -115,8 +175,8 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
       title: "Mobility block",
       subtitle: "10–15 min reset",
       reason:
-        "This supports consistency and recovery without " +
-        "requiring a full session.",
+        "Mobility is low strain, supports recovery, and " +
+        remainingGoalText(input.goals, "mobilitySessions") + ".",
       durationMinutes: 15,
       intensity: 2,
     });
@@ -128,8 +188,8 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
       title: "Mindset reset",
       subtitle: "10 min guided breathing or meditation",
       reason:
-        "A short mindfulness block supports recovery and " +
-        "habit consistency.",
+        "This supports recovery and consistency because " +
+        remainingGoalText(input.goals, "meditationSessions") + ".",
       durationMinutes: 10,
       intensity: 1,
     });
@@ -141,14 +201,15 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
       title: "Walk break",
       subtitle: "15 min light movement",
       reason:
-        "Today looks better suited to a low-friction movement suggestion.",
+        "With no urgent unmet goal, a short walk gives a low-friction " +
+        "wellness action matched to today's readiness.",
       durationMinutes: 15,
       intensity: 2,
     });
   }
 
   return {
-    summary: items[0]?.title ?? "Suggested plan",
+    summary: planSummary,
     items: items.slice(0, 3),
   };
 }

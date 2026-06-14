@@ -84,9 +84,12 @@ test("buildSmartPlan prioritises recovery when strain is high", () => {
     completedSessionsToday: 1,
   });
 
-  assert.equal(plan.summary, "High strain prioritise recovery");
+  assert.match(plan.summary, /Recovery focus/);
+  assert.match(plan.summary, /strain is 17\.0\/21/);
+  assert.match(plan.summary, /limiting intensity/);
   assert.equal(plan.items[0].activityType, "recovery");
   assert.equal(plan.items[0].intensity, 2);
+  assert.match(plan.items[0].reason, /Strain is 17\.0\/21/);
   assert.equal(plan.items[1].activityType, "walk");
 });
 
@@ -107,11 +110,15 @@ test("buildSmartPlan uses readiness and unmet goals for training suggestions", (
     completedSessionsToday: 0,
   });
 
-  assert.equal(plan.summary, "Training session");
+  assert.match(plan.summary, /Training opportunity/);
+  assert.match(plan.summary, /recovery is 85\/100/);
+  assert.match(plan.summary, /strain is 6\.0\/21/);
   assert.deepEqual(
     plan.items.map((item) => item.activityType),
     ["strength", "mobility", "meditation"]
   );
   assert.ok(plan.items.every((item) => item.durationMinutes > 0));
-  assert.ok(plan.items.every((item) => item.reason.length > 0));
+  assert.match(plan.items[0].reason, /weekly goal/);
+  assert.match(plan.items[1].reason, /Mobility is low strain/);
+  assert.match(plan.items[2].reason, /recovery and consistency/);
 });

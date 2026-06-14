@@ -172,3 +172,37 @@ goal/readiness-aware Smart Planning decisions.
 Creates direct, reproducible testing evidence for the core technical contribution of HABITUS.
 The tests can be cited in the final evaluation to show that the app's key metrics and planning
 outputs are not only UI claims but verified behaviours with known input/output cases.
+
+## 2026-06-14
+
+### Branch
+`fix/planner-explainability`
+
+### Commit message
+`fix(planner): make smart plan rationale explainable`
+
+### Files changed
+- `Views/Dashboard/DashboardView.swift`
+- `backend/functions/src/engines/smartPlanningEngine.ts`
+- `backend/functions/test/algorithm-validation.test.cjs`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal and progress report requirements that Smart Planning should be
+meaningful, personalised, and explainable. Planner summaries and item reasons now explicitly
+reference strain, recovery/readiness, intensity control, and unmet weekly goals.
+
+### Testing evidence
+- `npm test` passed with 6/6 backend algorithm tests, including Smart Planning rationale
+  assertions.
+- Firebase Functions TypeScript build passed as part of `npm test`.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: log sleep/goals/activity data, open the dashboard, and
+  confirm the Today's plan section includes a "Why this plan?" explanation plus item reasons
+  that connect the recommendation to strain, recovery, and goals.
+
+### Dissertation relevance
+Reduces the risk that Smart Planning appears hardcoded or arbitrary. This creates visible
+and tested evidence that HABITUS can justify recommendations in terms of the dissertation's
+core metrics and behavioural-planning requirements.
