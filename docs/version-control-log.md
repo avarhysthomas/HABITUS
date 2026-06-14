@@ -41,3 +41,36 @@ Smart Planning, calendar-aware scheduling, progress visualisation, and backend m
 Creates a clear version-control checkpoint for the progress-report MVP. This branch and
 commit can be cited as evidence that the application had moved from concept to an integrated
 SwiftUI/Firebase MVP with user inputs influencing metrics, planning outputs, and goal progress.
+
+## 2026-06-10
+
+### Branch
+`feature/onboarding-profile`
+
+### Commit message
+`feature(onboarding): add Office Athlete profile setup`
+
+### Files changed
+- `App/RootView.swift`
+- `ViewModels/SessionViewModel.swift`
+- `Views/Onboarding/SignUpView.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal requirement that users can securely sign in, select an Office Athlete
+level, provide work context, set a primary wellbeing goal, and supply baseline data used for
+personalised planning.
+
+### Testing evidence
+- Firebase Functions TypeScript build passed with `npm run build`.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator.
+- Simulator flow to verify manually: sign out or launch with no authenticated user, create a
+new account, complete the personalisation and baseline fields, then confirm the app opens to
+the main dashboard. For an existing account without `onboardingCompleted: true`, sign in and
+confirm the profile setup screen appears before the dashboard.
+
+### Dissertation relevance
+Creates visible evidence for the onboarding and personalisation success criteria in the
+proposal. The stored `users/{uid}` profile document can be shown in Firebase as proof that
+HABITUS captures Office Athlete level, work location, primary goal, and baseline wellbeing
+data before generating the user experience.

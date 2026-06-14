@@ -6,7 +6,13 @@ struct RootView: View {
     var body: some View {
         Group {
             if session.isSignedIn {
-                MainTabView()
+                if session.isCheckingProfile {
+                    ProgressView("Loading profile...")
+                } else if session.isOnboarded {
+                    MainTabView()
+                } else {
+                    ProfileSetupView()
+                }
             } else {
                 AuthView()
             }
