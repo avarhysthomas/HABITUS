@@ -142,3 +142,33 @@ daily strain recomputation, and visible dashboard deletion controls.
 Creates evidence that HABITUS supports correction of user-entered activity data rather than
 leaving incorrect health records immutable. This improves MVP credibility, data quality, and
 the proposal's data-handling/user-control story.
+
+## 2026-06-14
+
+### Branch
+`test/algorithm-validation`
+
+### Commit message
+`test(algorithms): add validation cases for strain recovery and planning`
+
+### Files changed
+- `backend/functions/package.json`
+- `backend/functions/test/algorithm-validation.test.cjs`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal and progress report claims that HABITUS uses tested algorithmic models
+for strain, recovery, and Smart Planning. Adds deterministic validation cases for the
+Session-RPE strain model, sleep-adjustment bounds, recovery traffic-light outputs, and
+goal/readiness-aware Smart Planning decisions.
+
+### Testing evidence
+- `npm test` passed with 6/6 backend algorithm tests.
+- Firebase Functions TypeScript build passed as part of `npm test`.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+
+### Dissertation relevance
+Creates direct, reproducible testing evidence for the core technical contribution of HABITUS.
+The tests can be cited in the final evaluation to show that the app's key metrics and planning
+outputs are not only UI claims but verified behaviours with known input/output cases.
