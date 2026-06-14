@@ -84,6 +84,10 @@ struct DashboardView: View {
                                     dayStore.smartPlanSummary
                             )
 
+                            if !dayStore.smartPlanSummary.isEmpty {
+                                plannerRationaleCard
+                            }
+
                             if dayStore.scheduledPlanItems.isEmpty && !dayStore.smartPlanItems.isEmpty {
                                 Text("Suggestions shown without calendar scheduling.")
                                     .font(.caption)
@@ -371,5 +375,21 @@ struct DashboardView: View {
         .padding(.vertical, 10)
         .background(Color.white.opacity(0.7))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var plannerRationaleCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Why this plan?")
+                .font(.subheadline.weight(.semibold))
+
+            Text(dayStore.smartPlanSummary)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 }
