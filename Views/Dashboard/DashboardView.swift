@@ -75,6 +75,10 @@ struct DashboardView: View {
                         )
                     }
 
+                    if !dayStore.weeklyProgressDays.isEmpty {
+                        weeklyProgressCard
+                    }
+
                     if !dayStore.smartPlanItems.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             sectionHeader(
@@ -174,6 +178,7 @@ struct DashboardView: View {
 
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+                    await dayStore.loadWeeklyProgress(containing: selectedDate)
                 }
             }
             .onReceive(
@@ -183,11 +188,13 @@ struct DashboardView: View {
             ) { _ in
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+                    await dayStore.loadWeeklyProgress(containing: selectedDate)
                 }
             }
             .onChange(of: goalsStore.goals) {
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+                    await dayStore.loadWeeklyProgress(containing: selectedDate)
                 }
             }
             .onChange(of: selectedDate) {
@@ -199,6 +206,7 @@ struct DashboardView: View {
 
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+                    await dayStore.loadWeeklyProgress(containing: selectedDate)
                 }
             }
             .onDisappear {
@@ -244,6 +252,7 @@ struct DashboardView: View {
         do {
             try await sessionsStore.deleteSession(item.id)
             await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+            await dayStore.loadWeeklyProgress(containing: selectedDate)
         } catch {
             print("deleteSession failed:", error)
         }
@@ -375,6 +384,107 @@ struct DashboardView: View {
         .padding(.vertical, 10)
         .background(Color.white.opacity(0.7))
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var weeklyProgressCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionHeader(
+                title: "Weekly snapshot",
+                subtitle: weeklySnapshotSubtitle
+            )
+
+            HStack(alignment: .bottom, spacing: 10) {
+                ForEach(dayStore.weeklyProgressDays) { day in
+                    weeklyDayColumn(day)
+                }
+            }
+            .frame(maxWidth: .infinity)
+
+            HStack(spacing: 12) {
+                summaryPill(label: "Avg strain", value: String(format: "%.1f", weeklyAverageStrain))
+                summaryPill(label: "Avg recovery", value: weeklyAverageRecoveryText)
+                summaryPill(label: "Sessions", value: "\(weeklySessionTotal)")
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    private func weeklyDayColumn(_ day: WeeklyProgressDay) -> some View {
+        VStack(spacing: 8) {
+            Text(day.dayLabel)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            ZStack(alignment: .bottom) {
+                Capsule()
+                    .fill(Color.white.opacity(0.65))
+                    .frame(width: 18, height: 86)
+
+                Capsule()
+                    .fill(day.hasData ? strainColor(for: day.strainScore) : Color.gray.opacity(0.25))
+                    .frame(
+                        width: 18,
+                        height: max(8, min(CGFloat(day.strainScore / 21.0) * 86, 86))
+                    )
+            }
+            .accessibilityLabel("\(day.dayLabel) strain \(String(format: "%.1f", day.strainScore))")
+
+            Circle()
+                .fill(recoveryDotColor(for: day.hasData ? day.recoveryScore : nil))
+                .frame(width: 8, height: 8)
+
+            Text("\(day.sessionCount)")
+                .font(.caption2.weight(.bold))
+                .foregroundStyle(day.sessionCount > 0 ? .primary : .secondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var weeklySnapshotSubtitle: String {
+        if weeklySessionTotal == 0 && weeklyAverageStrain == 0 && weeklyAverageRecovery == nil {
+            return "Log activities and sleep check-ins to build your weekly trend."
+        }
+
+        return "Seven-day view of strain, recovery, and logged sessions."
+    }
+
+    private var weeklyAverageStrain: Double {
+        let days = dayStore.weeklyProgressDays.filter { $0.hasData }
+        guard !days.isEmpty else { return 0 }
+        return days.reduce(0) { $0 + $1.strainScore } / Double(days.count)
+    }
+
+    private var weeklyAverageRecovery: Double? {
+        let scores = dayStore.weeklyProgressDays
+            .filter { $0.hasData }
+            .compactMap(\.recoveryScore)
+        guard !scores.isEmpty else { return nil }
+        return scores.reduce(0, +) / Double(scores.count)
+    }
+
+    private var weeklyAverageRecoveryText: String {
+        guard let weeklyAverageRecovery else { return "--" }
+        return String(format: "%.0f", weeklyAverageRecovery)
+    }
+
+    private var weeklySessionTotal: Int {
+        dayStore.weeklyProgressDays.reduce(0) { $0 + $1.sessionCount }
+    }
+
+    private func strainColor(for score: Double) -> Color {
+        if score >= 14 { return .red }
+        if score >= 7 { return .orange }
+        return .blue
+    }
+
+    private func recoveryDotColor(for score: Double?) -> Color {
+        guard let score else { return .gray.opacity(0.35) }
+        if score >= 70 { return .green }
+        if score >= 40 { return .orange }
+        return .red
     }
 
     private var plannerRationaleCard: some View {
