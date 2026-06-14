@@ -79,6 +79,8 @@ struct DashboardView: View {
                         weeklyProgressCard
                     }
 
+                    habitStreakCard
+
                     if !dayStore.smartPlanItems.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             sectionHeader(
@@ -179,6 +181,7 @@ struct DashboardView: View {
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                     await dayStore.loadWeeklyProgress(containing: selectedDate)
+                    await dayStore.loadHabitStreaks(endingAt: selectedDate)
                 }
             }
             .onReceive(
@@ -189,12 +192,20 @@ struct DashboardView: View {
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                     await dayStore.loadWeeklyProgress(containing: selectedDate)
+                    await dayStore.loadHabitStreaks(endingAt: selectedDate)
                 }
             }
             .onChange(of: goalsStore.goals) {
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                     await dayStore.loadWeeklyProgress(containing: selectedDate)
+                    await dayStore.loadHabitStreaks(endingAt: selectedDate)
+                }
+            }
+            .onReceive(sessionsStore.$sessions) { _ in
+                Task {
+                    await dayStore.loadWeeklyProgress(containing: selectedDate)
+                    await dayStore.loadHabitStreaks(endingAt: selectedDate)
                 }
             }
             .onChange(of: selectedDate) {
@@ -207,6 +218,7 @@ struct DashboardView: View {
                 Task {
                     await dayStore.generateSmartPlan(dateKey: selectedDateKey)
                     await dayStore.loadWeeklyProgress(containing: selectedDate)
+                    await dayStore.loadHabitStreaks(endingAt: selectedDate)
                 }
             }
             .onDisappear {
@@ -253,6 +265,7 @@ struct DashboardView: View {
             try await sessionsStore.deleteSession(item.id)
             await dayStore.generateSmartPlan(dateKey: selectedDateKey)
             await dayStore.loadWeeklyProgress(containing: selectedDate)
+            await dayStore.loadHabitStreaks(endingAt: selectedDate)
         } catch {
             print("deleteSession failed:", error)
         }
@@ -410,6 +423,73 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    private var habitStreakCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(
+                title: "Habit streaks",
+                subtitle: habitStreakSubtitle
+            )
+
+            HStack(spacing: 12) {
+                streakPill(
+                    title: "Check-ins",
+                    value: dayStore.habitStreak.checkInDays,
+                    caption: "sleep data"
+                )
+
+                streakPill(
+                    title: "Activity",
+                    value: dayStore.habitStreak.activityDays,
+                    caption: "logged days"
+                )
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    private var habitStreakSubtitle: String {
+        let checkIns = dayStore.habitStreak.checkInDays
+        let activities = dayStore.habitStreak.activityDays
+
+        if checkIns == 0 && activities == 0 {
+            return "Start a streak with a sleep check-in or logged activity."
+        }
+
+        if checkIns >= 3 || activities >= 3 {
+            return "Consistency is building across your recent routine."
+        }
+
+        return "Keep repeating the small actions that feed your plan."
+    }
+
+    private func streakPill(title: String, value: Int, caption: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text("\(value)")
+                    .font(.system(size: 30, weight: .bold, design: .rounded))
+
+                Text("day\(value == 1 ? "" : "s")")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+
+            Text(caption)
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.7))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
     private func weeklyDayColumn(_ day: WeeklyProgressDay) -> some View {

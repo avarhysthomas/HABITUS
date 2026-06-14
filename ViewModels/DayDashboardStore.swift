@@ -19,6 +19,11 @@ struct WeeklyProgressDay: Identifiable, Equatable {
     let hasData: Bool
 }
 
+struct HabitStreakSummary: Equatable {
+    let checkInDays: Int
+    let activityDays: Int
+}
+
 @MainActor
 final class DayDashboardStore: ObservableObject {
     @Published var strainScore: Double = 0.0
@@ -37,6 +42,7 @@ final class DayDashboardStore: ObservableObject {
 
     @Published var scheduledPlanItems: [ScheduledPlanItem] = []
     @Published var weeklyProgressDays: [WeeklyProgressDay] = []
+    @Published var habitStreak = HabitStreakSummary(checkInDays: 0, activityDays: 0)
 
     private let calendarService = CalendarAvailabilityService()
     private let scheduler = PlanScheduler()
@@ -257,6 +263,73 @@ final class DayDashboardStore: ObservableObject {
         }
 
         weeklyProgressDays = days
+    }
+
+    func loadHabitStreaks(endingAt date: Date) async {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        let calendar = Calendar.current
+        let db = Firestore.firestore()
+        var checkInDays = 0
+        var activityDays = 0
+        var isCountingCheckIns = true
+        var isCountingActivities = true
+
+        for offset in 0..<30 {
+            guard let day = calendar.date(
+                byAdding: .day,
+                value: -offset,
+                to: calendar.startOfDay(for: date)
+            ) else {
+                continue
+            }
+
+            let dateKey = DayKey.from(date: day)
+
+            do {
+                let snapshot = try await db
+                    .collection("users")
+                    .document(uid)
+                    .collection("days")
+                    .document(dateKey)
+                    .getDocument()
+
+                let data = snapshot.data() ?? [:]
+                let inputs = data["inputs"] as? [String: Any]
+                let strain = data["strain"] as? [String: Any]
+                let sleepHours = numberValue(inputs?["sleepHours"]) ?? 0
+                let sleepQuality = numberValue(inputs?["sleepQuality"]) ?? 0
+                let sessionCount = Int(numberValue(strain?["sessionCount"]) ?? 0)
+
+                if isCountingCheckIns {
+                    if snapshot.exists && sleepHours > 0 && sleepQuality >= 1 {
+                        checkInDays += 1
+                    } else {
+                        isCountingCheckIns = false
+                    }
+                }
+
+                if isCountingActivities {
+                    if snapshot.exists && sessionCount > 0 {
+                        activityDays += 1
+                    } else {
+                        isCountingActivities = false
+                    }
+                }
+
+                if !isCountingCheckIns && !isCountingActivities {
+                    break
+                }
+            } catch {
+                print("Habit streak load failed for \(dateKey):", error)
+                break
+            }
+        }
+
+        habitStreak = HabitStreakSummary(
+            checkInDays: checkInDays,
+            activityDays: activityDays
+        )
     }
 
     func schedulePlanItems(for dateKey: String) async {
