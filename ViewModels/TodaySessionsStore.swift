@@ -20,6 +20,7 @@ struct SessionRowItem: Identifiable {
 @MainActor
 final class TodaySessionsStore: ObservableObject {
     @Published var sessions: [SessionRowItem] = []
+    @Published var errorMessage: String?
 
     private var listener: ListenerRegistration?
 
@@ -73,5 +74,19 @@ final class TodaySessionsStore: ObservableObject {
     func stopListening() {
         listener?.remove()
         listener = nil
+    }
+
+    func deleteSession(_ sessionId: String) async throws {
+        errorMessage = nil
+
+        do {
+            try await FirebaseCallableRunner.callVoid(
+                "deleteSession",
+                payload: ["sessionId": sessionId]
+            )
+        } catch {
+            errorMessage = "Could not delete activity. Please try again."
+            throw error
+        }
     }
 }

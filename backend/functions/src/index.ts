@@ -18,6 +18,7 @@ import {GoalInput, PlannerInput} from "./engines/plannerTypes";
 import {
   getActiveGoals,
   updateGoalProgressForSession,
+  reverseGoalProgressForSession,
   resetWeeklyGoalsForAllUsers,
 } from "./services/goalService";
 import {yesterdayKeyUTC} from "./utils/dateKey";
@@ -122,6 +123,48 @@ function buildDefaultDayDoc(dateKey: string) {
         "Add sleep and recovery inputs to personalise today’s guidance.",
     },
   };
+}
+
+/**
+ * Converts accumulated adjusted load into the 0-21 daily strain scale.
+ * @param {number} totalLAdj Accumulated adjusted load.
+ * @return {number} Compressed strain score.
+ */
+function compressTo21(totalLAdj: number): number {
+  return 21 * (1 - Math.exp(-STRAIN_A * totalLAdj));
+}
+
+/**
+ * Recomputes one day summary from remaining session documents.
+ * @param {string} uid Authenticated user ID.
+ * @param {string} dateKey Day key in YYYY-MM-DD format.
+ * @return {Promise<void>} Resolves after the day summary is updated.
+ */
+async function recomputeDayStrain(uid: string, dateKey: string): Promise<void> {
+  const userRef = db.collection("users").doc(uid);
+  const dayRef = userRef.collection("days").doc(dateKey);
+  const sessionsSnap = await userRef
+    .collection("sessions")
+    .where("dateKey", "==", dateKey)
+    .get();
+
+  let totalLAdj = 0;
+  for (const doc of sessionsSnap.docs) {
+    totalLAdj += Number(doc.get("strain.lAdj") ?? 0);
+  }
+
+  await dayRef.set(
+    {
+      dateKey,
+      updatedAt: FieldValue.serverTimestamp(),
+      strain: {
+        totalLAdj: r2(totalLAdj),
+        score: r2(compressTo21(totalLAdj)),
+        sessionCount: sessionsSnap.size,
+      },
+    },
+    {merge: true}
+  );
 }
 
 /**
@@ -248,9 +291,6 @@ export const logSession = onCall(async (request) => {
 
   const sessionRef = userRef.collection("sessions").doc();
 
-  const compressTo21 = (totalLAdj: number) =>
-    21 * (1 - Math.exp(-STRAIN_A * totalLAdj));
-
   const txnResult = await db.runTransaction(async (tx) => {
     const now = FieldValue.serverTimestamp();
     const freshDaySnap = await tx.get(dayRef);
@@ -271,6 +311,8 @@ export const logSession = onCall(async (request) => {
       durationMinutes,
       rpe,
       modality,
+      activityType,
+      distanceKm: distanceKm ?? 0,
       sleepHours: effectiveSleepHours,
       sleepQuality: effectiveSleepQuality,
       strain: {
@@ -502,6 +544,50 @@ export const deleteAccountData = onCall(async (request) => {
   return {
     deletedDocuments: deletedCollections.reduce((sum, count) => sum + count, 0),
   };
+});
+
+/**
+ * Deletes one logged session and recomputes the affected day summary.
+ */
+export const deleteSession = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const data = request.data ?? {};
+  const sessionId = String(data.sessionId ?? "").trim();
+  if (!sessionId) {
+    throw new HttpsError("invalid-argument", "sessionId is required.");
+  }
+
+  const userRef = db.collection("users").doc(uid);
+  const sessionRef = userRef.collection("sessions").doc(sessionId);
+  const sessionSnap = await sessionRef.get();
+
+  if (!sessionSnap.exists) {
+    throw new HttpsError("not-found", "Session not found.");
+  }
+
+  const dateKey = String(sessionSnap.get("dateKey") ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    throw new HttpsError("failed-precondition", "Session has no valid date.");
+  }
+
+  const activityType = String(sessionSnap.get("activityType") ?? "").trim();
+  const distanceKmRaw = Number(sessionSnap.get("distanceKm") ?? 0);
+  const distanceKm = Number.isFinite(distanceKmRaw) && distanceKmRaw > 0 ?
+    distanceKmRaw :
+    undefined;
+
+  await sessionRef.delete();
+  await recomputeDayStrain(uid, dateKey);
+
+  if (activityType) {
+    await reverseGoalProgressForSession(uid, activityType, distanceKm);
+  }
+
+  return {dateKey, sessionId};
 });
 
 export const resetWeeklyGoals = onSchedule(

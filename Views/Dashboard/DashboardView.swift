@@ -12,6 +12,8 @@ struct DashboardView: View {
     @StateObject private var sessionsStore = TodaySessionsStore()
     @StateObject private var goalsStore = GoalsStore()
     @State private var selectedDate: Date = Date()
+    @State private var sessionPendingDeletion: SessionRowItem?
+    @State private var isDeletingSession = false
 
     private var selectedDateKey: String {
         DayKey.from(date: selectedDate)
@@ -141,9 +143,17 @@ struct DashboardView: View {
                         } else {
                             VStack(spacing: 14) {
                                 ForEach(sessionsStore.sessions) { item in
-                                    SessionRowView(item: item)
+                                    SessionRowView(item: item) {
+                                        sessionPendingDeletion = item
+                                    }
                                 }
                             }
+                        }
+
+                        if let errorMessage = sessionsStore.errorMessage {
+                            Text(errorMessage)
+                                .font(.subheadline)
+                                .foregroundStyle(.red)
                         }
                     }
                     .padding(.top, 4)
@@ -192,7 +202,50 @@ struct DashboardView: View {
                 sessionsStore.stopListening()
                 goalsStore.stopListening()
             }
+            .alert(
+                "Delete activity?",
+                isPresented: deleteAlertBinding,
+                presenting: sessionPendingDeletion
+            ) { item in
+                Button("Cancel", role: .cancel) {
+                    sessionPendingDeletion = nil
+                }
+
+                Button("Delete", role: .destructive) {
+                    Task {
+                        await deleteSession(item)
+                    }
+                }
+                .disabled(isDeletingSession)
+            } message: { item in
+                Text("This removes \(item.modality) from your day log and recalculates today's strain.")
+            }
         }
+    }
+
+    private var deleteAlertBinding: Binding<Bool> {
+        Binding(
+            get: { sessionPendingDeletion != nil },
+            set: { isPresented in
+                if !isPresented {
+                    sessionPendingDeletion = nil
+                }
+            }
+        )
+    }
+
+    private func deleteSession(_ item: SessionRowItem) async {
+        isDeletingSession = true
+
+        do {
+            try await sessionsStore.deleteSession(item.id)
+            await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+        } catch {
+            print("deleteSession failed:", error)
+        }
+
+        isDeletingSession = false
+        sessionPendingDeletion = nil
     }
 
     private var recoveryValueText: String {

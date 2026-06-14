@@ -48,6 +48,38 @@ export async function updateGoalProgressForSession(
   activityType: string,
   distanceKm?: number
 ): Promise<void> {
+  await applyGoalProgressDelta(uid, activityType, distanceKm, 1);
+}
+
+/**
+ * Reverses weekly goal progress after a session is deleted.
+ * @param {string} uid Authenticated user ID.
+ * @param {string} activityType Frontend activity type label.
+ * @param {number=} distanceKm Optional run distance in kilometres.
+ * @return {Promise<void>} Resolves when matching goal updates complete.
+ */
+export async function reverseGoalProgressForSession(
+  uid: string,
+  activityType: string,
+  distanceKm?: number
+): Promise<void> {
+  await applyGoalProgressDelta(uid, activityType, distanceKm, -1);
+}
+
+/**
+ * Applies a positive or negative goal progress delta for one session.
+ * @param {string} uid Authenticated user ID.
+ * @param {string} activityType Frontend activity type label.
+ * @param {number|undefined} distanceKm Optional run distance in kilometres.
+ * @param {1|-1} direction Positive for create, negative for delete.
+ * @return {Promise<void>} Resolves when matching goal updates complete.
+ */
+async function applyGoalProgressDelta(
+  uid: string,
+  activityType: string,
+  distanceKm: number | undefined,
+  direction: 1 | -1
+): Promise<void> {
   const goals = await getActiveGoals(uid);
 
   const updates = goals.map(async (goal) => {
@@ -74,6 +106,7 @@ export async function updateGoalProgressForSession(
     }
 
     if (increment <= 0) return;
+    const delta = increment * direction;
 
     await db()
       .collection("users")
@@ -81,7 +114,7 @@ export async function updateGoalProgressForSession(
       .collection("goals")
       .doc(goal.id)
       .update({
-        currentValue: FieldValue.increment(increment),
+        currentValue: FieldValue.increment(delta),
         updatedAt: FieldValue.serverTimestamp(),
       });
   });

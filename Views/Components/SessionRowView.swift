@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SessionRowView: View {
     let item: SessionRowItem
+    var onDelete: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .center) {
@@ -30,6 +31,16 @@ struct SessionRowView: View {
                 .background(Color.blue.opacity(0.12))
                 .foregroundStyle(.blue)
                 .clipShape(Capsule())
+
+            if let onDelete {
+                Button(role: .destructive, action: onDelete) {
+                    Image(systemName: "trash")
+                        .font(.headline)
+                        .frame(width: 36, height: 36)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Delete \(item.modality) session")
+            }
         }
         .padding(20)
         .background(
