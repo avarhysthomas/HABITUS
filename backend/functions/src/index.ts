@@ -3,6 +3,7 @@ import {onSchedule} from "firebase-functions/v2/scheduler";
 import {setGlobalOptions} from "firebase-functions/v2";
 import cors from "cors";
 import {initializeApp} from "firebase-admin/app";
+import {getAuth} from "firebase-admin/auth";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
 import {computeRecovery} from "./engines/recoveryEngine";
@@ -30,6 +31,41 @@ const corsHandler = cors({origin: true});
 
 // Rounding to 2 d.p. for UI.
 const r2 = (n: number) => Math.round(n * 100) / 100;
+
+/**
+ * Deletes every document in a known user-owned subcollection.
+ * @param {FirebaseFirestore.DocumentReference} userRef User document reference.
+ * @param {string} collectionName Name of the subcollection to delete.
+ * @return {Promise<number>} Number of deleted documents.
+ */
+async function deleteUserSubcollection(
+  userRef: FirebaseFirestore.DocumentReference,
+  collectionName: string
+): Promise<number> {
+  const snapshot = await userRef.collection(collectionName).get();
+
+  let batch = db.batch();
+  let operationCount = 0;
+  let deletedCount = 0;
+
+  for (const doc of snapshot.docs) {
+    batch.delete(doc.ref);
+    operationCount += 1;
+    deletedCount += 1;
+
+    if (operationCount === 400) {
+      await batch.commit();
+      batch = db.batch();
+      operationCount = 0;
+    }
+  }
+
+  if (operationCount > 0) {
+    await batch.commit();
+  }
+
+  return deletedCount;
+}
 
 /**
  * Builds a default day document so the frontend always receives
@@ -442,6 +478,32 @@ export const getPlanForUser = onCall(async (request) => {
   };
 });
 
+/**
+ * Deletes the authenticated user's HABITUS data and Firebase Auth account.
+ * This supports GDPR-style user control over stored wellness data.
+ */
+export const deleteAccountData = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const userRef = db.collection("users").doc(uid);
+
+  const deletedCollections = await Promise.all([
+    deleteUserSubcollection(userRef, "days"),
+    deleteUserSubcollection(userRef, "sessions"),
+    deleteUserSubcollection(userRef, "goals"),
+  ]);
+
+  await userRef.delete();
+  await getAuth().deleteUser(uid);
+
+  return {
+    deletedDocuments: deletedCollections.reduce((sum, count) => sum + count, 0),
+  };
+});
+
 export const resetWeeklyGoals = onSchedule(
   {
     schedule: "0 1 * * 1",
@@ -452,4 +514,3 @@ export const resetWeeklyGoals = onSchedule(
     await resetWeeklyGoalsForAllUsers();
   }
 );
-

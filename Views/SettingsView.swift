@@ -9,12 +9,16 @@ import SwiftUI
 import FirebaseAuth
 
 struct SettingsView: View {
+    @EnvironmentObject private var session: SessionViewModel
+
     @State private var sleepHours: Double = 7.5
     @State private var sleepQuality: Double = 3
     @State private var hadRestDay: Bool = false
 
     @State private var isSaving = false
+    @State private var isDeletingAccount = false
     @State private var showSaved = false
+    @State private var showDeleteConfirmation = false
     @State private var errorMessage: String?
 
     var body: some View {
@@ -55,6 +59,29 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("Privacy & Account") {
+                    Text(
+                        "HABITUS stores your profile, goals, activity logs, sleep check-ins, strain scores, recovery scores, and Smart Planning outputs in your private Firebase account data."
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                    Button("Sign Out") {
+                        session.signOut()
+                    }
+
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        if isDeletingAccount {
+                            ProgressView()
+                        } else {
+                            Text("Delete Account and Data")
+                        }
+                    }
+                    .disabled(isDeletingAccount)
+                }
+
                 if let errorMessage {
                     Section {
                         Text(errorMessage)
@@ -84,6 +111,14 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .alert("Delete account and data?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
+                    Task { await deleteAccountData() }
+                }
+            } message: {
+                Text("This permanently deletes your HABITUS profile, goals, daily metrics, sessions, and Firebase account.")
+            }
         }
     }
 
@@ -120,5 +155,29 @@ struct SettingsView: View {
             errorMessage = "Failed to update recovery. Please try again."
             print("❌ setDailyInputs failed:", error)
         }
+    }
+
+    private func deleteAccountData() async {
+        guard Auth.auth().currentUser != nil else {
+            errorMessage = "You’re not signed in yet. Please try again."
+            return
+        }
+
+        isDeletingAccount = true
+        errorMessage = nil
+
+        do {
+            try await FirebaseCallableRunner.callVoid(
+                "deleteAccountData",
+                payload: [:]
+            )
+
+            session.signOut()
+        } catch {
+            errorMessage = "Failed to delete account data. Please try again."
+            print("❌ deleteAccountData failed:", error)
+        }
+
+        isDeletingAccount = false
     }
 }
