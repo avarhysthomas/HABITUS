@@ -107,3 +107,38 @@ deletion, and a clear calendar permission reason.
 Creates direct evidence for the dissertation's ethical and GDPR discussion. The app now gives
 users clear visibility of stored wellness data categories and a demonstrable deletion path for
 profile, goals, daily metrics, logged sessions, and the Firebase Auth account.
+
+## 2026-06-14
+
+### Branch
+`feature/session-delete-flow`
+
+### Commit message
+`feature(sessions): add logged activity deletion`
+
+### Files changed
+- `ViewModels/TodaySessionsStore.swift`
+- `Views/Components/SessionRowView.swift`
+- `Views/Dashboard/DashboardView.swift`
+- `backend/functions/src/index.ts`
+- `backend/functions/src/services/goalService.ts`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal sprint deliverable for edit/delete functionality on logged sessions and
+strengthens user control over self-reported wellness data. Adds authenticated deletion,
+daily strain recomputation, and visible dashboard deletion controls.
+
+### Testing evidence
+- Firebase Functions TypeScript build passed with `npm run build`.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: log two activities, confirm the dashboard strain and
+  session count update, delete one activity from the Day log, then confirm the deleted row
+  disappears and the day's strain/session count recalculate. For sessions logged after this
+  change, matching goal progress is reversed where the session stored activity metadata.
+
+### Dissertation relevance
+Creates evidence that HABITUS supports correction of user-entered activity data rather than
+leaving incorrect health records immutable. This improves MVP credibility, data quality, and
+the proposal's data-handling/user-control story.
