@@ -238,3 +238,35 @@ session consistency using existing Firestore day documents.
 Creates visible evidence for the proposal's visual reinforcement and progress-tracking aims.
 The weekly snapshot makes screenshots more convincing by showing that HABITUS is not only
 reacting to today's input but also summarising recent behaviour patterns.
+
+## 2026-06-14
+
+### Branch
+`feature/habit-streaks`
+
+### Commit message
+`feature(habits): add check-in and activity streaks`
+
+### Files changed
+- `ViewModels/DayDashboardStore.swift`
+- `Views/Dashboard/DashboardView.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal and progress report requirements for behavioural nudges, habit
+reinforcement, and visual feedback loops. Adds dashboard streaks for consecutive sleep
+check-ins and activity logging using existing Firestore day documents.
+
+### Testing evidence
+- `npm test` passed with 6/6 backend algorithm tests.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: complete sleep check-ins and log activities across
+  consecutive days, open the dashboard, and confirm the Habit streaks card reflects
+  consecutive check-in and activity days. Delete an activity and confirm the activity streak
+  updates when that day no longer contains logged sessions.
+
+### Dissertation relevance
+Creates visible evidence that HABITUS reinforces repeat behaviour rather than only displaying
+single-day metrics. The streak card gives the final report and demo a clear feedback-loop
+artifact tied to sleep check-ins and activity logging.
