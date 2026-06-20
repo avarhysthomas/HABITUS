@@ -266,7 +266,8 @@ export const logSession = onCall(async (request) => {
   const dayRef = userRef.collection("days").doc(dateKey);
   const daySnap = await dayRef.get();
 
-  const storedInputs = daySnap.get("inputs") as Record<string, unknown> | undefined;
+  const storedInputs = daySnap.get("inputs") as
+    Record<string, unknown> | undefined;
   const effectiveSleepHoursRaw = Number(
     storedInputs?.sleepHours ?? data.sleepHours ?? 7.5
   );
@@ -461,7 +462,10 @@ export const getPlanForUser = onCall(async (request) => {
 
   const userRef = db.collection("users").doc(uid);
   const dayRef = userRef.collection("days").doc(dateKey);
-  const daySnap = await dayRef.get();
+  const [userSnap, daySnap] = await Promise.all([
+    userRef.get(),
+    dayRef.get(),
+  ]);
 
   if (!daySnap.exists) {
     await dayRef.set(buildDefaultDayDoc(dateKey), {merge: true});
@@ -489,6 +493,12 @@ export const getPlanForUser = onCall(async (request) => {
     currentValue: Number(goal.currentValue ?? 0),
   }));
 
+  const officeAthleteLevel = String(
+    userSnap.get("officeAthleteLevel") ?? ""
+  ).trim();
+  const workLocation = String(userSnap.get("workLocation") ?? "").trim();
+  const primaryGoal = String(userSnap.get("primaryGoal") ?? "").trim();
+
   const plannerInput: PlannerInput = {
     dateKey,
     strain,
@@ -499,6 +509,9 @@ export const getPlanForUser = onCall(async (request) => {
     hadRestDay,
     goals,
     completedSessionsToday,
+    officeAthleteLevel: officeAthleteLevel || undefined,
+    workLocation: workLocation || undefined,
+    primaryGoal: primaryGoal || undefined,
   };
 
   const plan = buildSmartPlan(plannerInput);

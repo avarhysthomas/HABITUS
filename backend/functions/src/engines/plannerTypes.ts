@@ -39,6 +39,9 @@ export interface PlannerInput {
   hadRestDay: boolean;
   goals: GoalInput[];
   completedSessionsToday: number;
+  officeAthleteLevel?: string;
+  workLocation?: string;
+  primaryGoal?: string;
 }
 
 export interface PlannerResult {

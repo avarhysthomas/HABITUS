@@ -18,6 +18,46 @@ import {
   PlanItem,
 } from "./plannerTypes";
 
+interface AthleteProfileRule {
+  level: string;
+  intensityCap: number;
+  durationScale: number;
+  summary: string;
+}
+
+const athleteProfileRules: AthleteProfileRule[] = [
+  {
+    level: "New to exercise",
+    intensityCap: 4,
+    durationScale: 0.75,
+    summary: "beginner profile: shorter sessions and capped intensity",
+  },
+  {
+    level: "Building consistency",
+    intensityCap: 5,
+    durationScale: 0.9,
+    summary: "consistency profile: manageable sessions before intensity",
+  },
+  {
+    level: "Regular mover",
+    intensityCap: 6,
+    durationScale: 1,
+    summary: "regular mover profile: balanced progression",
+  },
+  {
+    level: "Training 4+ times weekly",
+    intensityCap: 8,
+    durationScale: 1.08,
+    summary: "frequent training profile: slightly higher capacity",
+  },
+  {
+    level: "Performance focused",
+    intensityCap: 9,
+    durationScale: 1.12,
+    summary: "performance profile: higher capacity when readiness allows",
+  },
+];
+
 /**
  * Checks whether a given goal still has remaining progress.
  * @param {GoalInput[]} goals List of goals passed from the client.
@@ -42,6 +82,52 @@ function formatMetric(value: number, digits = 0): string {
 }
 
 /**
+ * Finds the Office Athlete adjustment rule for a planner input.
+ * @param {string | undefined} level Office Athlete level from user profile.
+ * @return {AthleteProfileRule | undefined} Matching rule when available.
+ */
+function profileRuleForLevel(
+  level: string | undefined
+): AthleteProfileRule | undefined {
+  return athleteProfileRules.find((rule) => rule.level === level);
+}
+
+/**
+ * Rounds recommended durations to neat five-minute blocks.
+ * @param {number} minutes Raw duration.
+ * @return {number} Rounded duration, never below five minutes.
+ */
+function roundDuration(minutes: number): number {
+  return Math.max(5, Math.round(minutes / 5) * 5);
+}
+
+/**
+ * Applies Office Athlete level adaptation to one plan item.
+ * @param {PlanItem} item Generated base plan item.
+ * @param {AthleteProfileRule | undefined} profileRule Profile rule.
+ * @return {PlanItem} Personalised item.
+ */
+function personaliseItem(
+  item: PlanItem,
+  profileRule: AthleteProfileRule | undefined
+): PlanItem {
+  if (!profileRule) return item;
+
+  const durationMinutes = roundDuration(
+    item.durationMinutes * profileRule.durationScale
+  );
+  const intensity = Math.min(item.intensity, profileRule.intensityCap);
+
+  return {
+    ...item,
+    durationMinutes,
+    intensity,
+    reason: item.reason + " Adjusted for Office Athlete level: " +
+      profileRule.level + ".",
+  };
+}
+
+/**
  * Builds the shared explanation sentence for a generated plan.
  * @param {PlannerInput} input Planner input payload.
  * @return {string} User-facing explanation of planner context.
@@ -50,28 +136,33 @@ function buildPlanSummary(input: PlannerInput): string {
   const readiness = input.recoveryState;
   const strain = formatMetric(input.strain, 1);
   const recovery = formatMetric(input.recovery);
+  const profileRule = profileRuleForLevel(input.officeAthleteLevel);
+  const profileText = profileRule ?
+    " Personalisation uses your Office Athlete " + profileRule.summary + "." :
+    "";
 
   if (input.strain >= 16 || input.recoveryState === "red") {
     return "Recovery focus: strain is " + strain +
       "/21 and readiness is " + readiness +
-      ", so HABITUS is limiting intensity today.";
+      ", so HABITUS is limiting intensity today." + profileText;
   }
 
   if (input.recovery >= 80 && input.strain <= 10) {
     return "Training opportunity: recovery is " + recovery +
       "/100 and strain is " + strain +
-      "/21, so a higher quality session is appropriate.";
+      "/21, so a higher quality session is appropriate." + profileText;
   }
 
   return "Consistency focus: recovery is " + recovery +
     "/100 and strain is " + strain +
-    "/21, so HABITUS is prioritising achievable goal progress.";
+    "/21, so HABITUS is prioritising achievable goal progress." +
+    profileText;
 }
 
 /**
  * Creates a concise remaining-goal phrase for plan rationale.
  * @param {GoalInput[]} goals List of goals passed from the client.
- * @param {GoalInput["type"]} type Goal type to explain.
+ * @param {string} type Goal type to explain.
  * @return {string} Remaining-goal explanation.
  */
 function remainingGoalText(
@@ -98,6 +189,7 @@ function remainingGoalText(
 export function buildSmartPlan(input: PlannerInput): PlannerResult {
   const items: PlanItem[] = [];
   const planSummary = buildPlanSummary(input);
+  const profileRule = profileRuleForLevel(input.officeAthleteLevel);
 
   if (input.strain >= 16 || input.recoveryState === "red") {
     items.push({
@@ -125,7 +217,9 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
 
     return {
       summary: planSummary,
-      items: items.slice(0, 3),
+      items: items.slice(0, 3).map((item) =>
+        personaliseItem(item, profileRule)
+      ),
     };
   }
 
@@ -210,6 +304,8 @@ export function buildSmartPlan(input: PlannerInput): PlannerResult {
 
   return {
     summary: planSummary,
-    items: items.slice(0, 3),
+    items: items.slice(0, 3).map((item) =>
+      personaliseItem(item, profileRule)
+    ),
   };
 }

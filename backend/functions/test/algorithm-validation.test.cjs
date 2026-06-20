@@ -122,3 +122,49 @@ test("buildSmartPlan uses readiness and unmet goals for training suggestions", (
   assert.match(plan.items[1].reason, /Mobility is low strain/);
   assert.match(plan.items[2].reason, /recovery and consistency/);
 });
+
+test("buildSmartPlan adapts intensity for new Office Athletes", () => {
+  const plan = buildSmartPlan({
+    dateKey: "2026-06-14",
+    strain: 6,
+    recovery: 85,
+    recoveryState: "green",
+    sleepHours: 8,
+    sleepQuality: 4,
+    hadRestDay: true,
+    goals: [
+      {type: "workoutCount", targetValue: 4, currentValue: 2},
+    ],
+    completedSessionsToday: 0,
+    officeAthleteLevel: "New to exercise",
+  });
+
+  assert.match(plan.summary, /Office Athlete beginner profile/);
+  assert.equal(plan.items[0].activityType, "strength");
+  assert.equal(plan.items[0].durationMinutes, 35);
+  assert.equal(plan.items[0].intensity, 4);
+  assert.match(plan.items[0].reason, /Adjusted for Office Athlete level/);
+});
+
+test("buildSmartPlan preserves capacity for performance profiles", () => {
+  const plan = buildSmartPlan({
+    dateKey: "2026-06-14",
+    strain: 6,
+    recovery: 85,
+    recoveryState: "green",
+    sleepHours: 8,
+    sleepQuality: 4,
+    hadRestDay: true,
+    goals: [
+      {type: "workoutCount", targetValue: 4, currentValue: 2},
+    ],
+    completedSessionsToday: 0,
+    officeAthleteLevel: "Performance focused",
+  });
+
+  assert.match(plan.summary, /Office Athlete performance profile/);
+  assert.equal(plan.items[0].activityType, "strength");
+  assert.equal(plan.items[0].durationMinutes, 50);
+  assert.equal(plan.items[0].intensity, 7);
+  assert.match(plan.items[0].reason, /Performance focused/);
+});
