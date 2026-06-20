@@ -24,6 +24,15 @@ struct HabitStreakSummary: Equatable {
     let activityDays: Int
 }
 
+enum CalendarPlanningState: Equatable {
+    case idle
+    case scheduled
+    case partial
+    case permissionDenied
+    case noAvailability
+    case unavailable
+}
+
 @MainActor
 final class DayDashboardStore: ObservableObject {
     @Published var strainScore: Double = 0.0
@@ -43,6 +52,8 @@ final class DayDashboardStore: ObservableObject {
     @Published var scheduledPlanItems: [ScheduledPlanItem] = []
     @Published var weeklyProgressDays: [WeeklyProgressDay] = []
     @Published var habitStreak = HabitStreakSummary(checkInDays: 0, activityDays: 0)
+    @Published var calendarPlanningState: CalendarPlanningState = .idle
+    @Published var calendarPlanningMessage: String = ""
 
     private let calendarService = CalendarAvailabilityService()
     private let scheduler = PlanScheduler()
@@ -335,6 +346,8 @@ final class DayDashboardStore: ObservableObject {
     func schedulePlanItems(for dateKey: String) async {
         guard !smartPlanItems.isEmpty else {
             scheduledPlanItems = []
+            calendarPlanningState = .idle
+            calendarPlanningMessage = ""
             return
         }
 
@@ -344,11 +357,22 @@ final class DayDashboardStore: ObservableObject {
             guard granted else {
                 print("Calendar access denied")
                 scheduledPlanItems = []
+                calendarPlanningState = .permissionDenied
+                calendarPlanningMessage =
+                    "Calendar access is off, so suggestions are shown without scheduled times."
                 return
             }
 
             let date = dateFromKey(dateKey) ?? Date()
             let slots = calendarService.freeSlots(for: date)
+
+            guard !slots.isEmpty else {
+                scheduledPlanItems = []
+                calendarPlanningState = .noAvailability
+                calendarPlanningMessage =
+                    "No suitable free calendar slots were found between 06:00 and 21:00."
+                return
+            }
 
             let scheduled = scheduler.schedule(
                 items: smartPlanItems,
@@ -356,9 +380,26 @@ final class DayDashboardStore: ObservableObject {
             )
 
             scheduledPlanItems = scheduled
+
+            if scheduled.isEmpty {
+                calendarPlanningState = .noAvailability
+                calendarPlanningMessage =
+                    "Calendar free slots were checked, but none were long enough for today's plan."
+            } else if scheduled.count < smartPlanItems.count {
+                calendarPlanningState = .partial
+                calendarPlanningMessage =
+                    "Calendar availability fitted \(scheduled.count) of \(smartPlanItems.count) suggestions into free time."
+            } else {
+                calendarPlanningState = .scheduled
+                calendarPlanningMessage =
+                    "Calendar availability fitted today's suggestions into free time."
+            }
         } catch {
             print("Scheduling error:", error)
             scheduledPlanItems = []
+            calendarPlanningState = .unavailable
+            calendarPlanningMessage =
+                "Calendar availability could not be checked, so suggestions are shown without scheduled times."
         }
     }
 

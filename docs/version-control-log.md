@@ -307,3 +307,36 @@ session duration and intensity while adding visible rationale text.
 Creates evidence that HABITUS closes the personalisation loop from onboarding to intervention.
 The final report can now show that Office Athlete level affects Smart Planning behaviour,
 which strengthens the project's claim that recommendations are tailored to user context.
+
+## 2026-06-20
+
+### Branch
+`fix/calendar-planning-feedback`
+
+### Commit message
+`fix(planner): clarify calendar scheduling feedback`
+
+### Files changed
+- `ViewModels/DayDashboardStore.swift`
+- `Views/Dashboard/DashboardView.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal requirement for Smart Planning to adapt around calendar availability
+and the progress report claim that HABITUS includes Apple Calendar-aware scheduling. The
+dashboard now explains whether suggestions were fitted into free calendar time, only partly
+scheduled, blocked by missing permission, or shown unscheduled because no suitable slots were
+available.
+
+### Testing evidence
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: open Dashboard with calendar access allowed and confirm
+  Today's plan shows a calendar scheduling status above scheduled cards. Then deny calendar
+  access in simulator privacy settings and confirm the same section explains that suggestions
+  are shown without scheduled times.
+
+### Dissertation relevance
+Creates clearer demo evidence for calendar-aware Smart Planning. A marker can now see why a
+plan is scheduled or unscheduled instead of interpreting an empty scheduled list as a broken
+integration.
