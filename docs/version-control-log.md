@@ -270,3 +270,40 @@ check-ins and activity logging using existing Firestore day documents.
 Creates visible evidence that HABITUS reinforces repeat behaviour rather than only displaying
 single-day metrics. The streak card gives the final report and demo a clear feedback-loop
 artifact tied to sleep check-ins and activity logging.
+
+## 2026-06-20
+
+### Branch
+`feature/office-athlete-personalisation`
+
+### Commit message
+`feature(planner): personalise smart plans by athlete level`
+
+### Files changed
+- `backend/functions/src/index.ts`
+- `backend/functions/src/engines/plannerTypes.ts`
+- `backend/functions/src/engines/smartPlanningEngine.ts`
+- `backend/functions/test/algorithm-validation.test.cjs`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal and progress report requirement that Office Athlete onboarding data
+personalises recommendations rather than only being stored as profile metadata. Smart
+Planning now reads the user's Office Athlete level from Firestore and adjusts recommended
+session duration and intensity while adding visible rationale text.
+
+### Testing evidence
+- `npm run lint` passed for Firebase Functions.
+- `npm test` passed with 8/8 backend algorithm tests, including Office Athlete
+  personalisation cases for new exercisers and performance-focused users.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: create or update accounts with different Office Athlete
+  levels, complete sleep/check-in and goal setup, open the dashboard, and confirm the Today's
+  plan rationale references Office Athlete personalisation while suggested intensity/duration
+  changes for beginner versus performance-focused profiles.
+
+### Dissertation relevance
+Creates evidence that HABITUS closes the personalisation loop from onboarding to intervention.
+The final report can now show that Office Athlete level affects Smart Planning behaviour,
+which strengthens the project's claim that recommendations are tailored to user context.
