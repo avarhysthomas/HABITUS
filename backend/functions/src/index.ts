@@ -560,6 +560,148 @@ export const deleteAccountData = onCall(async (request) => {
 });
 
 /**
+ * Updates one logged session, recomputes the affected day summary,
+ * and keeps goal progress aligned with the edited activity metadata.
+ */
+export const updateSession = onCall(async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Sign in required.");
+  }
+
+  const data = request.data ?? {};
+  const sessionId = String(data.sessionId ?? "").trim();
+  if (!sessionId) {
+    throw new HttpsError("invalid-argument", "sessionId is required.");
+  }
+
+  const durationMinutes = Number(data.durationMinutes ?? 0);
+  if (!Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+    throw new HttpsError(
+      "invalid-argument",
+      "durationMinutes must be > 0."
+    );
+  }
+
+  const rpe = Number(data.rpe ?? 0);
+  if (!Number.isFinite(rpe) || rpe < 0 || rpe > 10) {
+    throw new HttpsError(
+      "invalid-argument",
+      "rpe must be between 0 and 10."
+    );
+  }
+
+  const modalityInput = String(data.modality ?? "Endurance");
+  const validModalities: Modality[] = [
+    "HIIT",
+    "Endurance",
+    "Strength",
+    "Mobility",
+  ];
+  if (!validModalities.includes(modalityInput as Modality)) {
+    throw new HttpsError("invalid-argument", "Invalid modality.");
+  }
+  const modality = modalityInput as Modality;
+
+  const activityType = String(data.activityType ?? "").trim();
+  const distanceKmRaw = Number(data.distanceKm ?? 0);
+  const distanceKm = Number.isFinite(distanceKmRaw) && distanceKmRaw > 0 ?
+    distanceKmRaw :
+    undefined;
+
+  const userRef = db.collection("users").doc(uid);
+  const sessionRef = userRef.collection("sessions").doc(sessionId);
+  const sessionSnap = await sessionRef.get();
+
+  if (!sessionSnap.exists) {
+    throw new HttpsError("not-found", "Session not found.");
+  }
+
+  const dateKey = String(sessionSnap.get("dateKey") ?? "");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    throw new HttpsError("failed-precondition", "Session has no valid date.");
+  }
+
+  const previousActivityType = String(
+    sessionSnap.get("activityType") ?? ""
+  ).trim();
+  const previousDistanceKmRaw = Number(sessionSnap.get("distanceKm") ?? 0);
+  const previousDistanceKm = Number.isFinite(previousDistanceKmRaw) &&
+    previousDistanceKmRaw > 0 ?
+    previousDistanceKmRaw :
+    undefined;
+
+  const dayRef = userRef.collection("days").doc(dateKey);
+  const [userSnap, daySnap] = await Promise.all([
+    userRef.get(),
+    dayRef.get(),
+  ]);
+
+  const storedInputs = daySnap.get("inputs") as
+    Record<string, unknown> | undefined;
+  const sleepHoursRaw = Number(
+    storedInputs?.sleepHours ?? sessionSnap.get("sleepHours") ?? 7.5
+  );
+  const sleepQualityRaw = Number(
+    storedInputs?.sleepQuality ?? sessionSnap.get("sleepQuality") ?? 3
+  );
+  const baselineSleepHoursRaw = Number(
+    userSnap.get("baselineSleepHours") ?? 7.5
+  );
+  const sleepHours = Number.isFinite(sleepHoursRaw) ? sleepHoursRaw : 7.5;
+  const sleepQuality = Number.isFinite(sleepQualityRaw) ? sleepQualityRaw : 3;
+  const baselineSleepHours = Number.isFinite(baselineSleepHoursRaw) ?
+    baselineSleepHoursRaw :
+    7.5;
+
+  const strain = computeStrain({
+    durationMinutes,
+    rpe,
+    modality,
+    sleepHours,
+    sleepQuality,
+    baselineSleepHours,
+  });
+
+  await sessionRef.set(
+    {
+      updatedAt: FieldValue.serverTimestamp(),
+      durationMinutes,
+      rpe,
+      modality,
+      activityType,
+      distanceKm: distanceKm ?? 0,
+      sleepHours,
+      sleepQuality,
+      strain: {
+        lBase: r2(strain.lBase),
+        lMod: r2(strain.lMod),
+        sF: r2(strain.sF),
+        lAdj: r2(strain.lAdj),
+        score: r2(strain.strainScore021),
+      },
+    },
+    {merge: true}
+  );
+
+  await recomputeDayStrain(uid, dateKey);
+
+  if (previousActivityType) {
+    await reverseGoalProgressForSession(
+      uid,
+      previousActivityType,
+      previousDistanceKm
+    );
+  }
+
+  if (activityType) {
+    await updateGoalProgressForSession(uid, activityType, distanceKm);
+  }
+
+  return {dateKey, sessionId};
+});
+
+/**
  * Deletes one logged session and recomputes the affected day summary.
  */
 export const deleteSession = onCall(async (request) => {
