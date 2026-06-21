@@ -340,3 +340,37 @@ available.
 Creates clearer demo evidence for calendar-aware Smart Planning. A marker can now see why a
 plan is scheduled or unscheduled instead of interpreting an empty scheduled list as a broken
 integration.
+
+## 2026-06-21
+
+### Branch
+`feature/session-edit-flow`
+
+### Commit message
+`feature(sessions): add logged activity editing`
+
+### Files changed
+- `ViewModels/TodaySessionsStore.swift`
+- `Views/Components/SessionRowView.swift`
+- `Views/Dashboard/DashboardView.swift`
+- `backend/functions/src/index.ts`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal requirement for edit/delete flows on logged wellbeing data and
+strengthens the MVP's data correction story. Users can now edit a logged activity's type,
+duration, intensity, and run distance from the dashboard day log.
+
+### Testing evidence
+- `npm run lint` passed for Firebase Functions.
+- `npm test` passed with 8/8 backend algorithm tests.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: log an activity, open Dashboard, tap the edit button in
+  the Day log, change duration or RPE, save, and confirm the row plus strain score update.
+  For a run, change distance or type and confirm weekly goal progress remains consistent.
+
+### Dissertation relevance
+Creates evidence that HABITUS supports correction of self-reported health/activity data
+instead of forcing users to delete and recreate records. This improves data quality,
+usability, and the final MVP defence around user control.

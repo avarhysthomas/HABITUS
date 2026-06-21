@@ -13,6 +13,7 @@ struct DashboardView: View {
     @StateObject private var goalsStore = GoalsStore()
     @State private var selectedDate: Date = Date()
     @State private var sessionPendingDeletion: SessionRowItem?
+    @State private var sessionPendingEdit: SessionRowItem?
     @State private var isDeletingSession = false
 
     private var selectedDateKey: String {
@@ -153,9 +154,15 @@ struct DashboardView: View {
                         } else {
                             VStack(spacing: 14) {
                                 ForEach(sessionsStore.sessions) { item in
-                                    SessionRowView(item: item) {
-                                        sessionPendingDeletion = item
-                                    }
+                                    SessionRowView(
+                                        item: item,
+                                        onEdit: {
+                                            sessionPendingEdit = item
+                                        },
+                                        onDelete: {
+                                            sessionPendingDeletion = item
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -244,6 +251,11 @@ struct DashboardView: View {
             } message: { item in
                 Text("This removes \(item.modality) from your day log and recalculates today's strain.")
             }
+            .sheet(item: $sessionPendingEdit) { item in
+                EditSessionSheet(item: item) { payload in
+                    try await updateSession(payload)
+                }
+            }
         }
     }
 
@@ -272,6 +284,14 @@ struct DashboardView: View {
 
         isDeletingSession = false
         sessionPendingDeletion = nil
+    }
+
+    private func updateSession(_ payload: SessionEditPayload) async throws {
+        try await sessionsStore.updateSession(payload)
+        await dayStore.generateSmartPlan(dateKey: selectedDateKey)
+        await dayStore.loadWeeklyProgress(containing: selectedDate)
+        await dayStore.loadHabitStreaks(endingAt: selectedDate)
+        sessionPendingEdit = nil
     }
 
     private var recoveryValueText: String {
@@ -633,6 +653,166 @@ struct DashboardView: View {
             return .gray
         case .idle:
             return .secondary
+        }
+    }
+}
+
+private struct EditSessionSheet: View {
+    let item: SessionRowItem
+    let onSave: (SessionEditPayload) async throws -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var type: String
+    @State private var duration: Double
+    @State private var distanceKm: Double
+    @State private var intensity: Double
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    private let types = ["Strength", "Run", "Hyrox", "Mobility", "Yoga", "Walk", "Other"]
+
+    init(
+        item: SessionRowItem,
+        onSave: @escaping (SessionEditPayload) async throws -> Void
+    ) {
+        self.item = item
+        self.onSave = onSave
+
+        let resolvedType = Self.displayType(for: item)
+        _type = State(initialValue: resolvedType)
+        _duration = State(initialValue: Double(item.durationMinutes))
+        _distanceKm = State(initialValue: max(item.distanceKm, 0.5))
+        _intensity = State(initialValue: Double(item.rpe))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Activity") {
+                    Picker("Type", selection: $type) {
+                        ForEach(types, id: \.self) { Text($0) }
+                    }
+
+                    HStack {
+                        Text("Duration (min)")
+                        Spacer()
+                        Text("\(Int(duration))")
+                            .foregroundStyle(.secondary)
+                    }
+                    Slider(value: $duration, in: 5...180, step: 5)
+
+                    if type == "Run" {
+                        HStack {
+                            Text("Distance (km)")
+                            Spacer()
+                            Text(String(format: "%.1f", distanceKm))
+                                .foregroundStyle(.secondary)
+                        }
+                        Slider(value: $distanceKm, in: 0.5...30, step: 0.5)
+                    }
+
+                    HStack {
+                        Text("Intensity (1-10)")
+                        Spacer()
+                        Text("\(Int(intensity))")
+                            .foregroundStyle(.secondary)
+                    }
+                    Slider(value: $intensity, in: 1...10, step: 1)
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                            .font(.subheadline)
+                    }
+                }
+
+                Section {
+                    Button {
+                        Task {
+                            await save()
+                        }
+                    } label: {
+                        if isSaving {
+                            ProgressView()
+                                .frame(maxWidth: .infinity)
+                        } else {
+                            Text("Save changes")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .disabled(isSaving)
+                }
+            }
+            .navigationTitle("Edit Activity")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+            }
+        }
+    }
+
+    private func save() async {
+        isSaving = true
+        errorMessage = nil
+
+        do {
+            try await onSave(
+                SessionEditPayload(
+                    sessionId: item.id,
+                    activityType: type,
+                    modality: backendModality(for: type),
+                    durationMinutes: Int(duration),
+                    rpe: Int(intensity),
+                    distanceKm: type == "Run" ? distanceKm : 0
+                )
+            )
+
+            isSaving = false
+            dismiss()
+        } catch {
+            isSaving = false
+            errorMessage = "Could not update activity. Please try again."
+        }
+    }
+
+    private static func displayType(for item: SessionRowItem) -> String {
+        if !item.activityType.isEmpty {
+            return item.activityType
+        }
+
+        switch item.modality {
+        case "HIIT":
+            return "Hyrox"
+        case "Endurance":
+            return "Run"
+        case "Strength":
+            return "Strength"
+        case "Mobility":
+            return "Mobility"
+        default:
+            return "Other"
+        }
+    }
+
+    private func backendModality(for type: String) -> String {
+        switch type {
+        case "Hyrox":
+            return "HIIT"
+        case "Run":
+            return "Endurance"
+        case "Strength":
+            return "Strength"
+        case "Mobility", "Yoga", "Walk":
+            return "Mobility"
+        default:
+            return "Endurance"
         }
     }
 }

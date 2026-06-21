@@ -9,12 +9,13 @@ import SwiftUI
 
 struct SessionRowView: View {
     let item: SessionRowItem
+    var onEdit: (() -> Void)?
     var onDelete: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(item.modality)
+                Text(item.activityType.isEmpty ? item.modality : item.activityType)
                     .font(.title3.weight(.semibold))
 
                 Text("\(item.durationMinutes) min × RPE \(item.rpe)")
@@ -31,6 +32,16 @@ struct SessionRowView: View {
                 .background(Color.blue.opacity(0.12))
                 .foregroundStyle(.blue)
                 .clipShape(Capsule())
+
+            if let onEdit {
+                Button(action: onEdit) {
+                    Image(systemName: "pencil")
+                        .font(.headline)
+                        .frame(width: 36, height: 36)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Edit \(item.activityType.isEmpty ? item.modality : item.activityType) session")
+            }
 
             if let onDelete {
                 Button(role: .destructive, action: onDelete) {

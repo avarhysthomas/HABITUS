@@ -12,9 +12,20 @@ import FirebaseFirestore
 struct SessionRowItem: Identifiable {
     let id: String
     let modality: String
+    let activityType: String
     let durationMinutes: Int
     let rpe: Int
+    let distanceKm: Double
     let score: Double
+}
+
+struct SessionEditPayload {
+    let sessionId: String
+    let activityType: String
+    let modality: String
+    let durationMinutes: Int
+    let rpe: Int
+    let distanceKm: Double
 }
 
 @MainActor
@@ -53,8 +64,10 @@ final class TodaySessionsStore: ObservableObject {
                     let data = doc.data()
 
                     let modality = data["modality"] as? String ?? "Session"
+                    let activityType = data["activityType"] as? String ?? modality
                     let durationMinutes = (data["durationMinutes"] as? NSNumber)?.intValue ?? 0
                     let rpe = (data["rpe"] as? NSNumber)?.intValue ?? 0
+                    let distanceKm = (data["distanceKm"] as? NSNumber)?.doubleValue ?? 0
 
                     let strain = data["strain"] as? [String: Any]
                     let score = (strain?["score"] as? NSNumber)?.doubleValue ?? 0
@@ -62,8 +75,10 @@ final class TodaySessionsStore: ObservableObject {
                     return SessionRowItem(
                         id: doc.documentID,
                         modality: modality,
+                        activityType: activityType,
                         durationMinutes: durationMinutes,
                         rpe: rpe,
+                        distanceKm: distanceKm,
                         score: score
                     )
                 }
@@ -86,6 +101,27 @@ final class TodaySessionsStore: ObservableObject {
             )
         } catch {
             errorMessage = "Could not delete activity. Please try again."
+            throw error
+        }
+    }
+
+    func updateSession(_ payload: SessionEditPayload) async throws {
+        errorMessage = nil
+
+        do {
+            try await FirebaseCallableRunner.callVoid(
+                "updateSession",
+                payload: [
+                    "sessionId": payload.sessionId,
+                    "activityType": payload.activityType,
+                    "modality": payload.modality,
+                    "durationMinutes": payload.durationMinutes,
+                    "rpe": payload.rpe,
+                    "distanceKm": payload.distanceKm
+                ]
+            )
+        } catch {
+            errorMessage = "Could not update activity. Please try again."
             throw error
         }
     }
