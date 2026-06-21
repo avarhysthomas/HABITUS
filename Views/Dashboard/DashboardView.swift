@@ -94,11 +94,11 @@ struct DashboardView: View {
                                 plannerRationaleCard
                             }
 
-                            if dayStore.scheduledPlanItems.isEmpty && !dayStore.smartPlanItems.isEmpty {
-                                Text("Suggestions shown without calendar scheduling.")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                            if !dayStore.calendarPlanningMessage.isEmpty {
+                                calendarPlanningNotice
+                            }
 
+                            if dayStore.scheduledPlanItems.isEmpty && !dayStore.smartPlanItems.isEmpty {
                                 VStack(spacing: 14) {
                                     ForEach(dayStore.smartPlanItems) { item in
                                         SmartPlanCard(item: item)
@@ -581,5 +581,58 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 18))
+    }
+
+    private var calendarPlanningNotice: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle()
+                .fill(calendarPlanningColor)
+                .frame(width: 8, height: 8)
+                .padding(.top, 5)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(calendarPlanningTitle)
+                    .font(.caption.weight(.semibold))
+
+                Text(dayStore.calendarPlanningMessage)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var calendarPlanningTitle: String {
+        switch dayStore.calendarPlanningState {
+        case .scheduled:
+            return "Calendar scheduled"
+        case .partial:
+            return "Calendar partially scheduled"
+        case .permissionDenied:
+            return "Calendar access needed"
+        case .noAvailability:
+            return "No calendar slot found"
+        case .unavailable:
+            return "Calendar unavailable"
+        case .idle:
+            return "Calendar planning"
+        }
+    }
+
+    private var calendarPlanningColor: Color {
+        switch dayStore.calendarPlanningState {
+        case .scheduled:
+            return .green
+        case .partial:
+            return .orange
+        case .permissionDenied, .noAvailability, .unavailable:
+            return .gray
+        case .idle:
+            return .secondary
+        }
     }
 }
