@@ -374,3 +374,34 @@ duration, intensity, and run distance from the dashboard day log.
 Creates evidence that HABITUS supports correction of self-reported health/activity data
 instead of forcing users to delete and recreate records. This improves data quality,
 usability, and the final MVP defence around user control.
+
+## 2026-06-21
+
+### Branch
+`test/ios-logic-validation`
+
+### Commit message
+`test(ios): add logic validation for dates goals and scheduling`
+
+### Files changed
+- `HABITUSTests/HABITUSTests.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal and progress report requirement for testing and validation beyond the
+Firebase Functions algorithms. Adds Swift unit tests for date key formatting, goal progress
+edge cases, and Smart Planning slot scheduling behaviour.
+
+### Testing evidence
+- iOS unit tests passed on iPhone 16 simulator with 6/6 tests passing in the
+  `HABITUSTests` target.
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- Simulator flow to verify manually: no user-facing flow is required; this change creates
+  automated test evidence for local Swift logic used by the dashboard, goals, and calendar
+  planning features.
+
+### Dissertation relevance
+Strengthens the technical quality evidence by replacing the generated iOS test placeholder
+with focused validation cases. This helps defend HABITUS as a tested MVP across both backend
+algorithms and key Swift scheduling/date logic.
