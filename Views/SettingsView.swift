@@ -23,94 +23,37 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Daily Recovery") {
-                    HStack {
-                        Text("Sleep Hours")
-                        Spacer()
-                        Text(String(format: "%.1f", sleepHours))
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Slider(value: $sleepHours, in: 0...12, step: 0.5)
-
-                    HStack {
-                        Text("Sleep Quality")
-                        Spacer()
-                        Text("\(Int(sleepQuality))/5")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Slider(value: $sleepQuality, in: 1...5, step: 1)
-
-                    Toggle("Rest Day Yesterday", isOn: $hadRestDay)
-                }
-
-                Section("Planning") {
-                    NavigationLink {
-                        GoalsView()
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Weekly Goals")
-                            Text("Set training, run, mobility, and meditation targets")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-
-                Section("Privacy & Account") {
-                    Text(
-                        "HABITUS stores your profile, goals, activity logs, sleep check-ins, strain scores, recovery scores, and Smart Planning outputs in your private Firebase account data."
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    HabitusScreenHeader(
+                        eyebrow: "Control room",
+                        title: "Settings",
+                        subtitle: "Keep recovery inputs, privacy, and account controls in one place."
                     )
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
 
-                    Button("Sign Out") {
-                        session.signOut()
-                    }
+                    recoveryPanel
+                    privacyPanel
 
-                    Button(role: .destructive) {
-                        showDeleteConfirmation = true
-                    } label: {
-                        if isDeletingAccount {
-                            ProgressView()
-                        } else {
-                            Text("Delete Account and Data")
-                        }
-                    }
-                    .disabled(isDeletingAccount)
-                }
-
-                if let errorMessage {
-                    Section {
+                    if let errorMessage {
                         Text(errorMessage)
+                            .font(.subheadline)
                             .foregroundStyle(.red)
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white.opacity(0.76))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
-                }
 
-                Section {
-                    Button {
-                        Task {
-                            await updateRecovery()
-                        }
-                    } label: {
-                        if isSaving {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else if showSaved {
-                            Label("Updated!", systemImage: "checkmark")
-                                .foregroundStyle(.green)
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Update Recovery")
-                                .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .disabled(isSaving)
+                    updateRecoveryButton
                 }
+                .padding(.horizontal, 18)
+                .padding(.top, 18)
+                .padding(.bottom, 30)
             }
-            .navigationTitle("Settings")
+            .background(HabitusStyle.screenBackground)
+            .scrollIndicators(.hidden)
+            .navigationTitle("")
+            .toolbar(.hidden, for: .navigationBar)
             .alert("Delete account and data?", isPresented: $showDeleteConfirmation) {
                 Button("Cancel", role: .cancel) { }
                 Button("Delete", role: .destructive) {
@@ -119,6 +62,141 @@ struct SettingsView: View {
             } message: {
                 Text("This permanently deletes your HABITUS profile, goals, daily metrics, sessions, and Firebase account.")
             }
+        }
+    }
+
+    private var recoveryPanel: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Daily recovery")
+                        .font(.title3.weight(.bold))
+
+                    Text("Manual inputs for today's readiness.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text(String(format: "%.1f h", sleepHours))
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(HabitusStyle.teal)
+            }
+
+            sliderRow(
+                title: "Sleep hours",
+                value: String(format: "%.1f", sleepHours),
+                slider: Slider(value: $sleepHours, in: 0...12, step: 0.5)
+            )
+
+            sliderRow(
+                title: "Sleep quality",
+                value: "\(Int(sleepQuality))/5",
+                slider: Slider(value: $sleepQuality, in: 1...5, step: 1)
+            )
+
+            Toggle(isOn: $hadRestDay) {
+                Text("Rest day yesterday")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .tint(HabitusStyle.teal)
+        }
+        .habitusPanel()
+    }
+
+    private var privacyPanel: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Privacy & account")
+                .font(.title3.weight(.bold))
+
+            Text(
+                "HABITUS stores your profile, goals, activity logs, sleep check-ins, strain scores, recovery scores, and Smart Planning outputs in your private Firebase account data."
+            )
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+
+            HStack(spacing: 12) {
+                Button {
+                    session.signOut()
+                } label: {
+                    Label("Sign out", systemImage: "rectangle.portrait.and.arrow.right")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(HabitusStyle.ink)
+                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.white.opacity(0.72))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    HStack {
+                        if isDeletingAccount {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "trash.fill")
+                            Text("Delete")
+                        }
+                    }
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.red)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .disabled(isDeletingAccount)
+            }
+        }
+        .habitusPanel()
+    }
+
+    private var updateRecoveryButton: some View {
+        Button {
+            Task {
+                await updateRecovery()
+            }
+        } label: {
+            HStack {
+                Spacer()
+
+                if isSaving {
+                    ProgressView()
+                        .tint(.white)
+                } else if showSaved {
+                    Label("Updated", systemImage: "checkmark")
+                } else {
+                    Label("Update recovery", systemImage: "arrow.clockwise")
+                }
+
+                Spacer()
+            }
+            .habitusPrimaryCTA()
+        }
+        .disabled(isSaving)
+    }
+
+    private func sliderRow<SliderView: View>(
+        title: String,
+        value: String,
+        slider: SliderView
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+
+                Spacer()
+
+                Text(value)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+
+            slider
+                .tint(HabitusStyle.teal)
         }
     }
 

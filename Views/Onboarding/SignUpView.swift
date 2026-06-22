@@ -5,7 +5,6 @@
 //  Created by Ava Thomas on 16/03/2026.
 //
 
-
 import SwiftUI
 import FirebaseAuth
 
@@ -53,41 +52,73 @@ struct SignUpView: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        Form {
-            Section("Create account") {
-                TextField("Email", text: $email)
-                    .keyboardType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 22) {
+                HabitusScreenHeader(
+                    eyebrow: "Profile setup",
+                    title: "Create account",
+                    subtitle: "Set the baseline HABITUS uses to personalise your first plan."
+                )
 
-                SecureField("Password", text: $password)
-                SecureField("Confirm password", text: $confirmPassword)
-            }
+                accountPanel
+                OnboardingProfileForm(profile: $profile)
 
-            OnboardingProfileForm(profile: $profile)
-
-            if let errorMessage {
-                Section {
+                if let errorMessage {
                     Text(errorMessage)
+                        .font(.subheadline)
                         .foregroundStyle(.red)
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.white.opacity(0.76))
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
                 }
-            }
 
-            Section {
                 Button {
                     Task { await signUp() }
                 } label: {
-                    if isLoading {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                    } else {
-                        Text("Create account")
-                            .frame(maxWidth: .infinity)
+                    HStack {
+                        Spacer()
+
+                        if isLoading {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Label("Create account", systemImage: "person.crop.circle.badge.plus")
+                        }
+
+                        Spacer()
                     }
+                    .habitusPrimaryCTA()
                 }
+                .disabled(isLoading)
             }
+            .padding(.horizontal, 18)
+            .padding(.top, 18)
+            .padding(.bottom, 30)
         }
-        .navigationTitle("Sign up")
+        .background(HabitusStyle.screenBackground)
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var accountPanel: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Account")
+                .font(.title3.weight(.bold))
+
+            TextField("Email", text: $email)
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .habitusTextField()
+
+            SecureField("Password", text: $password)
+                .habitusTextField()
+
+            SecureField("Confirm password", text: $confirmPassword)
+                .habitusTextField()
+        }
+        .habitusPanel()
     }
 
     private func signUp() async {
@@ -138,40 +169,52 @@ struct ProfileSetupView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    Text("Complete your HABITUS profile")
-                        .font(.title2.weight(.semibold))
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    HabitusScreenHeader(
+                        eyebrow: "Personalisation",
+                        title: "Complete profile",
+                        subtitle: "These answers shape dashboard copy and Smart Planning recommendations."
+                    )
 
-                    Text("These answers personalise your dashboard and Smart Planning recommendations.")
-                        .foregroundStyle(.secondary)
-                }
+                    OnboardingProfileForm(profile: $profile)
 
-                OnboardingProfileForm(profile: $profile)
-
-                if let errorMessage {
-                    Section {
+                    if let errorMessage {
                         Text(errorMessage)
+                            .font(.subheadline)
                             .foregroundStyle(.red)
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white.opacity(0.76))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
-                }
 
-                Section {
                     Button {
                         Task { await saveProfile() }
                     } label: {
-                        if isSaving {
-                            ProgressView()
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Text("Save profile")
-                                .frame(maxWidth: .infinity)
+                        HStack {
+                            Spacer()
+
+                            if isSaving {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Label("Save profile", systemImage: "checkmark.circle.fill")
+                            }
+
+                            Spacer()
                         }
+                        .habitusPrimaryCTA()
                     }
                     .disabled(isSaving)
                 }
+                .padding(.horizontal, 18)
+                .padding(.top, 18)
+                .padding(.bottom, 30)
             }
-            .navigationTitle("Profile")
+            .background(HabitusStyle.screenBackground)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 
@@ -193,59 +236,106 @@ private struct OnboardingProfileForm: View {
     @Binding var profile: OnboardingProfileData
 
     var body: some View {
-        Section("Personalisation") {
-            Picker("Office Athlete level", selection: $profile.officeAthleteLevel) {
-                ForEach(OnboardingProfileData.officeAthleteLevels, id: \.self) {
-                    Text($0)
-                }
-            }
-
-            Picker("Work location", selection: $profile.workLocation) {
-                ForEach(OnboardingProfileData.workLocations, id: \.self) {
-                    Text($0)
-                }
-            }
-
-            Picker("Primary goal", selection: $profile.primaryGoal) {
-                ForEach(OnboardingProfileData.primaryGoals, id: \.self) {
-                    Text($0)
-                }
-            }
+        VStack(spacing: 18) {
+            personalisationPanel
+            baselinePanel
         }
+    }
 
-        Section("Baseline") {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Typical sleep")
-                    Spacer()
-                    Text(String(format: "%.1f hours", profile.baselineSleepHours))
-                        .foregroundStyle(.secondary)
+    private var personalisationPanel: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Personalisation")
+                .font(.title3.weight(.bold))
+
+            pickerRow(
+                title: "Office Athlete level",
+                selection: $profile.officeAthleteLevel,
+                options: OnboardingProfileData.officeAthleteLevels
+            )
+
+            pickerRow(
+                title: "Work location",
+                selection: $profile.workLocation,
+                options: OnboardingProfileData.workLocations
+            )
+
+            pickerRow(
+                title: "Primary goal",
+                selection: $profile.primaryGoal,
+                options: OnboardingProfileData.primaryGoals
+            )
+        }
+        .habitusPanel()
+    }
+
+    private var baselinePanel: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Baseline")
+                .font(.title3.weight(.bold))
+
+            sliderRow(
+                title: "Typical sleep",
+                value: String(format: "%.1f hours", profile.baselineSleepHours),
+                slider: Slider(value: $profile.baselineSleepHours, in: 0...12, step: 0.5)
+            )
+
+            sliderRow(
+                title: "Typical stress",
+                value: "\(Int(profile.baselineStress))/5",
+                slider: Slider(value: $profile.baselineStress, in: 1...5, step: 1)
+            )
+
+            sliderRow(
+                title: "Typical energy",
+                value: "\(Int(profile.baselineEnergy))/5",
+                slider: Slider(value: $profile.baselineEnergy, in: 1...5, step: 1)
+            )
+        }
+        .habitusPanel()
+    }
+
+    private func pickerRow(
+        title: String,
+        selection: Binding<String>,
+        options: [String]
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+
+            Picker(title, selection: selection) {
+                ForEach(options, id: \.self) {
+                    Text($0)
                 }
+            }
+            .pickerStyle(.menu)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white.opacity(0.76))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+        }
+    }
 
-                Slider(value: $profile.baselineSleepHours, in: 0...12, step: 0.5)
+    private func sliderRow<SliderView: View>(
+        title: String,
+        value: String,
+        slider: SliderView
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+
+                Spacer()
+
+                Text(value)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Typical stress")
-                    Spacer()
-                    Text("\(Int(profile.baselineStress))/5")
-                        .foregroundStyle(.secondary)
-                }
-
-                Slider(value: $profile.baselineStress, in: 1...5, step: 1)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Typical energy")
-                    Spacer()
-                    Text("\(Int(profile.baselineEnergy))/5")
-                        .foregroundStyle(.secondary)
-                }
-
-                Slider(value: $profile.baselineEnergy, in: 1...5, step: 1)
-            }
+            slider
+                .tint(HabitusStyle.teal)
         }
     }
 }

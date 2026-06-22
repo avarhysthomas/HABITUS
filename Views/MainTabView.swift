@@ -18,7 +18,7 @@ struct MainTabView: View {
     }
 
     enum Tab: Hashable {
-        case dashboard, log, settings
+        case dashboard, log, goals, settings
     }
 
     var body: some View {
@@ -34,6 +34,12 @@ struct MainTabView: View {
                     Label("Log", systemImage: "plus.circle")
                 }
                 .tag(Tab.log)
+
+            GoalsView()
+                .tabItem {
+                    Label("Goals", systemImage: "target")
+                }
+                .tag(Tab.goals)
 
             SettingsView()
                 .tabItem {
