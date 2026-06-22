@@ -405,3 +405,33 @@ edge cases, and Smart Planning slot scheduling behaviour.
 Strengthens the technical quality evidence by replacing the generated iOS test placeholder
 with focused validation cases. This helps defend HABITUS as a tested MVP across both backend
 algorithms and key Swift scheduling/date logic.
+
+## 2026-06-22
+
+### Branch
+`fix/firestore-security-rules`
+
+### Commit message
+`fix(firebase): add user-scoped firestore rules`
+
+### Files changed
+- `backend/firestore.rules`
+- `backend/firebase.json`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the proposal and progress report requirements for privacy, secure handling of
+wellness data, and GDPR-aligned user data boundaries. Firestore rules are now checked into
+the repository and restrict direct client access to the authenticated user's own
+`users/{uid}` document and nested data.
+
+### Testing evidence
+- `firebase emulators:exec --only firestore "echo firestore-rules-loaded"` passed and
+  confirmed the Firestore emulator could load the rules from `backend/firebase.json`.
+- Manual review: rules deny all documents outside `users/{uid}` and allow authenticated
+  users to read/write only their own user document tree.
+
+### Dissertation relevance
+Creates explicit version-controlled security evidence for HABITUS. This strengthens the
+privacy discussion by showing that user wellness data is scoped by Firebase Authentication
+rather than relying only on app UI behaviour.
