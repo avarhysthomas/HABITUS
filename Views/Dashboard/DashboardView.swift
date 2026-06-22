@@ -41,145 +41,26 @@ struct DashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 18) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(selectedDayTitle)
-                                .font(.system(size: 32, weight: .bold, design: .rounded))
-
-                            Text(selectedDateSubtitle)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        WeekStripView(selectedDate: $selectedDate)
-
-                        guidanceHero
-                    }
-
-                    VStack(spacing: 16) {
-                        MetricRing(
-                            title: "Strain",
-                            valueText: String(format: "%.1f", dayStore.strainScore),
-                            subtitle: strainSubtitle,
-                            progress: min(dayStore.strainScore / 21.0, 1.0)
-                        )
-
-                        MetricRing(
-                            title: "Recovery",
-                            valueText: recoveryValueText,
-                            subtitle: dayStore.recoveryGuidance.isEmpty ?
-                                "Add sleep soon" :
-                                dayStore.recoveryGuidance,
-                            progress: recoveryProgress,
-                            color: recoveryColor
-                        )
-                    }
-
-                    if !dayStore.weeklyProgressDays.isEmpty {
-                        weeklyProgressCard
-                    }
-
-                    habitStreakCard
-
-                    if !dayStore.smartPlanItems.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            sectionHeader(
-                                title: "Today's plan",
-                                subtitle: dayStore.smartPlanSummary.isEmpty ?
-                                    "Suggested sessions based on your current recovery and load." :
-                                    dayStore.smartPlanSummary
-                            )
-
-                            if !dayStore.smartPlanSummary.isEmpty {
-                                plannerRationaleCard
-                            }
-
-                            if !dayStore.calendarPlanningMessage.isEmpty {
-                                calendarPlanningNotice
-                            }
-
-                            if dayStore.scheduledPlanItems.isEmpty && !dayStore.smartPlanItems.isEmpty {
-                                VStack(spacing: 14) {
-                                    ForEach(dayStore.smartPlanItems) { item in
-                                        SmartPlanCard(item: item)
-                                    }
-                                }
-                            } else {
-                                VStack(spacing: 14) {
-                                    ForEach(dayStore.scheduledPlanItems) { item in
-                                        ScheduledPlanCard(item: item)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if !goalsStore.goals.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            sectionHeader(
-                                title: "Weekly progress",
-                                subtitle: "Track consistency across your goals, not just today's output."
-                            )
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                ForEach(goalsStore.goals) { goal in
-                                    GoalProgressRow(
-                                        title: goal.type.title,
-                                        currentValue: goal.currentValue,
-                                        targetValue: goal.targetValue,
-                                        unit: goal.type.unit
-                                    )
-                                }
-                            }
-                            .padding(20)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 24))
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        sectionHeader(
-                            title: "Day log",
-                            subtitle: dayStore.sessionCount == 0 ?
-                                "No sessions logged for this day yet." :
-                                "\(dayStore.sessionCount) session\(dayStore.sessionCount == 1 ? "" : "s") logged"
-                        )
-
-                        if sessionsStore.sessions.isEmpty {
-                            Text("No activities logged yet.")
-                                .foregroundStyle(.secondary)
-                                .padding(.vertical, 6)
-                        } else {
-                            VStack(spacing: 14) {
-                                ForEach(sessionsStore.sessions) { item in
-                                    SessionRowView(
-                                        item: item,
-                                        onEdit: {
-                                            sessionPendingEdit = item
-                                        },
-                                        onDelete: {
-                                            sessionPendingDeletion = item
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        if let errorMessage = sessionsStore.errorMessage {
-                            Text(errorMessage)
-                                .font(.subheadline)
-                                .foregroundStyle(.red)
-                        }
-                    }
-                    .padding(.top, 4)
-
+                VStack(alignment: .leading, spacing: 22) {
+                    dashboardHeader
+                    WeekStripView(selectedDate: $selectedDate)
+                    dailyBriefingPanel
+                    smartPlanSection
+                    metricStrip
+                    progressSection
+                    goalsSection
+                    dayLogSection
                     Spacer(minLength: 12)
                 }
-                .padding()
+                .padding(.horizontal, 18)
+                .padding(.top, 18)
+                .padding(.bottom, 24)
             }
-            .navigationTitle("Dashboard")
+            .background(dashboardBackground)
+            .scrollIndicators(.hidden)
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .navigationBar)
             .onAppear {
                 dayStore.startListening(dateKey: selectedDateKey)
                 sessionsStore.startListening(dateKey: selectedDateKey)
@@ -294,6 +175,523 @@ struct DashboardView: View {
         sessionPendingEdit = nil
     }
 
+    private var dashboardBackground: some View {
+        LinearGradient(
+            colors: [
+                Color(red: 0.95, green: 0.98, blue: 0.97),
+                Color(red: 0.90, green: 0.94, blue: 0.98),
+                Color(.systemBackground)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+
+    private var dashboardHeader: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("HABITUS")
+                    .font(.caption.weight(.bold))
+                    .tracking(1.4)
+                    .foregroundStyle(Color(red: 0.06, green: 0.09, blue: 0.12))
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 7)
+                    .background(Color.white.opacity(0.76))
+                    .clipShape(Capsule())
+
+                Spacer()
+
+                Text(selectedDateSubtitle)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.white.opacity(0.72))
+                    .clipShape(Capsule())
+            }
+
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Office athlete")
+                        .font(.caption.weight(.bold))
+                        .textCase(.uppercase)
+                        .tracking(1.1)
+                        .foregroundStyle(.secondary)
+
+                    Text(selectedDayTitle)
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 0.06, green: 0.09, blue: 0.12))
+                }
+
+                Spacer()
+            }
+
+            Text(dailyBriefingLine)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var dailyBriefingLine: String {
+        if dayStore.recoveryScore == nil && dayStore.strainScore < 0.1 {
+            return "Check in once, then HABITUS can shape the day around your body and calendar."
+        }
+
+        if dayStore.recoveryScore == nil {
+            return "Activity is logged. Add sleep to unlock a sharper recovery read."
+        }
+
+        if dayStore.strainScore >= 14 {
+            return "Load is climbing. Keep progress alive without forcing intensity."
+        }
+
+        if recoveryProgress >= 0.7 {
+            return "Readiness looks strong. Use the workday window wisely."
+        }
+
+        return "Steady inputs, practical planning, one useful move at a time."
+    }
+
+    private var dailyBriefingPanel: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .top, spacing: 14) {
+                VStack(alignment: .leading, spacing: 10) {
+                    statusChip(
+                        title: readinessBadgeText,
+                        color: readinessBadgeColor
+                    )
+
+                    Text(dayStore.recommendationTitle.isEmpty ? "Build today's guidance" : dayStore.recommendationTitle)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(dayStore.recommendationSubtitle.isEmpty ? "Add sleep and recovery inputs to personalise your training plan." : dayStore.recommendationSubtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.78))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 10)
+
+                readinessDial
+            }
+
+            HStack(spacing: 10) {
+                briefingStat(label: "Strain", value: String(format: "%.1f", dayStore.strainScore))
+                briefingStat(label: "Recovery", value: recoveryValueText)
+                briefingStat(label: "Sessions", value: "\(dayStore.sessionCount)")
+            }
+        }
+        .padding(22)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.05, green: 0.10, blue: 0.13),
+                    Color(red: 0.04, green: 0.24, blue: 0.25),
+                    readinessBadgeColor.opacity(0.58)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28)
+                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28))
+        .shadow(color: Color.black.opacity(0.12), radius: 18, x: 0, y: 10)
+    }
+
+    private var readinessDial: some View {
+        ZStack {
+            Circle()
+                .stroke(Color.white.opacity(0.22), lineWidth: 10)
+
+            Circle()
+                .trim(from: 0, to: max(0, min(recoveryProgress, 1)))
+                .stroke(
+                    Color.white,
+                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+
+            VStack(spacing: 1) {
+                Text(recoveryValueText)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+
+                Text("ready")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.72))
+            }
+        }
+        .frame(width: 90, height: 90)
+        .accessibilityLabel("Recovery \(recoveryValueText)")
+    }
+
+    private func briefingStat(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.64))
+
+            Text(value)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func statusChip(title: String, color: Color) -> some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.bold))
+            .tracking(1)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(color.opacity(0.18))
+            .foregroundStyle(.white)
+            .clipShape(Capsule())
+    }
+
+    private var smartPlanSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            sectionHeader(
+                title: "Next best action",
+                subtitle: smartPlanSubtitle
+            )
+
+            if let primaryScheduledPlan {
+                ScheduledPlanCard(item: primaryScheduledPlan, isFeatured: true)
+            } else if let primarySmartPlan {
+                SmartPlanCard(item: primarySmartPlan, isFeatured: true)
+            } else {
+                emptyPlanPanel
+            }
+
+            if !dayStore.calendarPlanningMessage.isEmpty {
+                calendarPlanningNotice
+            }
+
+            if !dayStore.smartPlanSummary.isEmpty {
+                plannerRationaleCard
+            }
+
+            planQueue
+        }
+    }
+
+    private var smartPlanSubtitle: String {
+        if !dayStore.smartPlanItems.isEmpty {
+            return "One practical move matched to readiness, goals, and the workday."
+        }
+
+        return "Complete today's check-in to generate a plan that fits your context."
+    }
+
+    private var primaryScheduledPlan: ScheduledPlanItem? {
+        dayStore.scheduledPlanItems.first
+    }
+
+    private var primarySmartPlan: SmartPlanItem? {
+        dayStore.smartPlanItems.first
+    }
+
+    @ViewBuilder
+    private var planQueue: some View {
+        let scheduledRest = Array(dayStore.scheduledPlanItems.dropFirst())
+        let unscheduledRest = Array(dayStore.smartPlanItems.dropFirst())
+
+        if !scheduledRest.isEmpty || (!dayStore.scheduledPlanItems.isEmpty && !unscheduledRest.isEmpty) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Plan queue")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                if !scheduledRest.isEmpty {
+                    ForEach(scheduledRest) { item in
+                        ScheduledPlanCard(item: item)
+                    }
+                } else {
+                    ForEach(unscheduledRest) { item in
+                        SmartPlanCard(item: item)
+                    }
+                }
+            }
+        } else if dayStore.scheduledPlanItems.isEmpty && !unscheduledRest.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Plan queue")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                ForEach(unscheduledRest) { item in
+                    SmartPlanCard(item: item)
+                }
+            }
+        }
+    }
+
+    private var emptyPlanPanel: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("No plan yet")
+                .font(.headline.weight(.semibold))
+
+            Text("Add sleep and activity context to turn the dashboard into a daily operating plan.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.72))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+    }
+
+    private var metricStrip: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Body load")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(.white)
+
+                Text("Fast read on effort, recovery, and today's logged work.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.78))
+            }
+
+            HStack(spacing: 12) {
+                metricTile(
+                    title: "Strain",
+                    value: String(format: "%.1f", dayStore.strainScore),
+                    subtitle: strainSubtitle,
+                    color: strainColor(for: dayStore.strainScore),
+                    progress: min(dayStore.strainScore / 21.0, 1)
+                )
+
+                metricTile(
+                    title: "Recovery",
+                    value: recoveryValueText,
+                    subtitle: dayStore.recoveryGuidance.isEmpty ? "Add sleep soon" : dayStore.recoveryGuidance,
+                    color: recoveryColor,
+                    progress: recoveryProgress
+                )
+            }
+        }
+        .padding(18)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.06, green: 0.09, blue: 0.12).opacity(0.92),
+                    Color(red: 0.03, green: 0.20, blue: 0.24).opacity(0.88)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    private func metricTile(
+        title: String,
+        value: String,
+        subtitle: String,
+        color: Color,
+        progress: Double
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(title)
+                    .font(.caption.weight(.bold))
+                    .textCase(.uppercase)
+                    .foregroundStyle(.white.opacity(0.72))
+
+                Spacer()
+
+                Circle()
+                    .fill(color)
+                    .frame(width: 9, height: 9)
+            }
+
+            Text(value)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.18))
+
+                    Capsule()
+                        .fill(color)
+                        .frame(width: proxy.size.width * max(0, min(progress, 1)))
+                }
+            }
+            .frame(height: 7)
+
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.82))
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 172, alignment: .topLeading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.13),
+                    color.opacity(0.22)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+        )
+    }
+
+    @ViewBuilder
+    private var progressSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Momentum")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color(red: 0.06, green: 0.09, blue: 0.12))
+
+                    Text("Progress signals that keep routine visible.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text("\(dayStore.habitStreak.checkInDays + dayStore.habitStreak.activityDays)")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(Color(red: 0.02, green: 0.56, blue: 0.54))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color(red: 0.02, green: 0.56, blue: 0.54).opacity(0.12))
+                    .clipShape(Capsule())
+            }
+
+            if !dayStore.weeklyProgressDays.isEmpty {
+                weeklyProgressCard
+            }
+
+            habitStreakCard
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.54))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.white.opacity(0.75), lineWidth: 1)
+        )
+    }
+
+    @ViewBuilder
+    private var goalsSection: some View {
+        if !goalsStore.goals.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                sectionHeader(
+                    title: "Goal momentum",
+                    subtitle: "Weekly targets stay visible without taking over the day."
+                )
+
+                VStack(alignment: .leading, spacing: 14) {
+                    ForEach(goalsStore.goals) { goal in
+                        GoalProgressRow(
+                            title: goal.type.title,
+                            currentValue: goal.currentValue,
+                            targetValue: goal.targetValue,
+                            unit: goal.type.unit
+                        )
+                    }
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.76))
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+            }
+        }
+    }
+
+    private var dayLogSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader(
+                title: "Evidence log",
+                subtitle: dayStore.sessionCount == 0 ?
+                    "No sessions logged for this day yet." :
+                    "\(dayStore.sessionCount) session\(dayStore.sessionCount == 1 ? "" : "s") shaping today's strain"
+            )
+
+            if sessionsStore.sessions.isEmpty {
+                HStack(spacing: 14) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(Color(red: 0.02, green: 0.56, blue: 0.54))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("No activities logged yet.")
+                            .font(.headline.weight(.semibold))
+                            .foregroundStyle(Color(red: 0.06, green: 0.09, blue: 0.12))
+
+                        Text("Log one movement break or session to give the dashboard something to work with.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.88),
+                            Color(red: 0.90, green: 0.98, blue: 0.96)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(Color.white.opacity(0.86), lineWidth: 1)
+                )
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(sessionsStore.sessions) { item in
+                        SessionRowView(
+                            item: item,
+                            onEdit: {
+                                sessionPendingEdit = item
+                            },
+                            onDelete: {
+                                sessionPendingDeletion = item
+                            }
+                        )
+                    }
+                }
+            }
+
+            if let errorMessage = sessionsStore.errorMessage {
+                Text(errorMessage)
+                    .font(.subheadline)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
     private var recoveryValueText: String {
         guard let score = dayStore.recoveryScore else { return "--" }
         return String(format: "%.0f", score)
@@ -396,7 +794,8 @@ struct DashboardView: View {
     private func sectionHeader(title: String, subtitle: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.headline)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Color(red: 0.06, green: 0.09, blue: 0.12))
 
             Text(subtitle)
                 .font(.subheadline)
@@ -421,17 +820,53 @@ struct DashboardView: View {
 
     private var weeklyProgressCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            sectionHeader(
-                title: "Weekly snapshot",
-                subtitle: weeklySnapshotSubtitle
-            )
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Weekly snapshot")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color(red: 0.06, green: 0.09, blue: 0.12))
+
+                    Text(weeklySnapshotSubtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(weeklySessionTotal)")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Color(red: 0.02, green: 0.56, blue: 0.54))
+
+                    Text("sessions")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(Color.white.opacity(0.72))
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
 
             HStack(alignment: .bottom, spacing: 10) {
                 ForEach(dayStore.weeklyProgressDays) { day in
                     weeklyDayColumn(day)
                 }
             }
+            .padding(14)
             .frame(maxWidth: .infinity)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.04, green: 0.09, blue: 0.12),
+                        Color(red: 0.03, green: 0.22, blue: 0.25)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 18))
 
             HStack(spacing: 12) {
                 summaryPill(label: "Avg strain", value: String(format: "%.1f", weeklyAverageStrain))
@@ -441,35 +876,80 @@ struct DashboardView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.92),
+                    Color(red: 0.88, green: 0.96, blue: 0.98)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.85), lineWidth: 1)
+        )
     }
 
     private var habitStreakCard: some View {
         VStack(alignment: .leading, spacing: 14) {
-            sectionHeader(
-                title: "Habit streaks",
-                subtitle: habitStreakSubtitle
-            )
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Habit streaks")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(.white)
+
+                    Text(habitStreakSubtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.76))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Image(systemName: "flame.fill")
+                    .font(.title3.weight(.bold))
+                    .foregroundStyle(Color(red: 0.42, green: 0.91, blue: 0.66))
+                    .padding(10)
+                    .background(Color.white.opacity(0.13))
+                    .clipShape(Circle())
+            }
 
             HStack(spacing: 12) {
                 streakPill(
                     title: "Check-ins",
                     value: dayStore.habitStreak.checkInDays,
-                    caption: "sleep data"
+                    caption: "sleep data",
+                    color: Color(red: 0.42, green: 0.91, blue: 0.66)
                 )
 
                 streakPill(
                     title: "Activity",
                     value: dayStore.habitStreak.activityDays,
-                    caption: "logged days"
+                    caption: "logged days",
+                    color: Color(red: 0.09, green: 0.55, blue: 0.96)
                 )
             }
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.05, green: 0.10, blue: 0.13),
+                    Color(red: 0.02, green: 0.30, blue: 0.29)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+        )
     }
 
     private var habitStreakSubtitle: String {
@@ -487,44 +967,63 @@ struct DashboardView: View {
         return "Keep repeating the small actions that feed your plan."
     }
 
-    private func streakPill(title: String, value: Int, caption: String) -> some View {
+    private func streakPill(
+        title: String,
+        value: Int,
+        caption: String,
+        color: Color
+    ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.68))
 
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text("\(value)")
                     .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
 
                 Text("day\(value == 1 ? "" : "s")")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.68))
             }
 
             Text(caption)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.58))
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.7))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.13),
+                    color.opacity(0.24)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+        )
     }
 
     private func weeklyDayColumn(_ day: WeeklyProgressDay) -> some View {
         VStack(spacing: 8) {
             Text(day.dayLabel)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.68))
 
             ZStack(alignment: .bottom) {
                 Capsule()
-                    .fill(Color.white.opacity(0.65))
+                    .fill(Color.white.opacity(0.16))
                     .frame(width: 18, height: 86)
 
                 Capsule()
-                    .fill(day.hasData ? strainColor(for: day.strainScore) : Color.gray.opacity(0.25))
+                    .fill(day.hasData ? strainColor(for: day.strainScore) : Color.white.opacity(0.28))
                     .frame(
                         width: 18,
                         height: max(8, min(CGFloat(day.strainScore / 21.0) * 86, 86))
@@ -538,7 +1037,7 @@ struct DashboardView: View {
 
             Text("\(day.sessionCount)")
                 .font(.caption2.weight(.bold))
-                .foregroundStyle(day.sessionCount > 0 ? .primary : .secondary)
+                .foregroundStyle(day.sessionCount > 0 ? .white : .white.opacity(0.48))
         }
         .frame(maxWidth: .infinity)
     }
@@ -599,7 +1098,7 @@ struct DashboardView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.white.opacity(0.68))
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
@@ -622,7 +1121,7 @@ struct DashboardView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground))
+        .background(Color.white.opacity(0.68))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
