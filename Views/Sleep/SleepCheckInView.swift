@@ -21,70 +21,133 @@ struct SleepCheckInView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Daily check-in")
-                        .font(.largeTitle.bold())
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    HabitusScreenHeader(
+                        eyebrow: "Recovery input",
+                        title: "Daily check-in",
+                        subtitle: "Log sleep first so recovery and today's plan start from real data."
+                    )
 
-                    Text("Log your sleep first so HABITUS can calculate recovery and build today’s plan.")
-                        .foregroundStyle(.secondary)
-                }
+                    recoveryHero
 
-                VStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Sleep Hours")
-                            Spacer()
-                            Text(String(format: "%.1f", sleepHours))
-                                .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 18) {
+                        sliderRow(
+                            title: "Sleep hours",
+                            value: String(format: "%.1f h", sleepHours),
+                            slider: Slider(value: $sleepHours, in: 0...12, step: 0.5)
+                        )
+
+                        sliderRow(
+                            title: "Sleep quality",
+                            value: "\(Int(sleepQuality))/5",
+                            slider: Slider(value: $sleepQuality, in: 1...5, step: 1)
+                        )
+
+                        Toggle(isOn: $hadRestDay) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Rest day yesterday")
+                                    .font(.subheadline.weight(.semibold))
+
+                                Text("Feeds the recovery calculation before planning.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                        .tint(HabitusStyle.teal)
+                    }
+                    .habitusPanel()
 
-                        Slider(value: $sleepHours, in: 0...12, step: 0.5)
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundStyle(.red)
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white.opacity(0.76))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
 
-                    VStack(alignment: .leading, spacing: 8) {
+                    Button {
+                        Task { await saveInputs() }
+                    } label: {
                         HStack {
-                            Text("Sleep Quality")
                             Spacer()
-                            Text("\(Int(sleepQuality))/5")
-                                .foregroundStyle(.secondary)
+
+                            if isSaving {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Label("Save check-in", systemImage: "checkmark.circle.fill")
+                            }
+
+                            Spacer()
                         }
-
-                        Slider(value: $sleepQuality, in: 1...5, step: 1)
+                        .habitusPrimaryCTA()
                     }
-
-                    Toggle("Rest Day Yesterday", isOn: $hadRestDay)
+                    .disabled(isSaving)
                 }
-                .padding()
-                .background(Color(.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .padding(.horizontal, 18)
+                .padding(.top, 18)
+                .padding(.bottom, 30)
+            }
+            .background(HabitusStyle.screenBackground)
+            .scrollIndicators(.hidden)
+            .navigationBarBackButtonHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
+        }
+    }
 
-                if let errorMessage {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.subheadline)
-                }
+    private var recoveryHero: some View {
+        HStack(alignment: .center, spacing: 18) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Recovery baseline")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.white)
 
-                Button {
-                    Task { await saveInputs() }
-                } label: {
-                    if isSaving {
-                        ProgressView()
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    } else {
-                        Text("Save check-in")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(isSaving)
+                Text("\(String(format: "%.1f", sleepHours)) hours")
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+
+                Text("Quality \(Int(sleepQuality))/5")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white.opacity(0.78))
+            }
+
+            Spacer()
+
+            Image(systemName: hadRestDay ? "moon.stars.fill" : "sun.max.fill")
+                .font(.system(size: 34, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 78, height: 78)
+                .background(Color.white.opacity(0.18))
+                .clipShape(Circle())
+        }
+        .padding(22)
+        .background(HabitusStyle.heroGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 28))
+        .shadow(color: HabitusStyle.teal.opacity(0.22), radius: 22, x: 0, y: 12)
+    }
+
+    private func sliderRow<SliderView: View>(
+        title: String,
+        value: String,
+        slider: SliderView
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
 
                 Spacer()
+
+                Text(value)
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(.secondary)
             }
-            .padding()
-            .navigationBarBackButtonHidden(true)
+
+            slider
+                .tint(HabitusStyle.teal)
         }
     }
 

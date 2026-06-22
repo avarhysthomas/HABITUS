@@ -480,3 +480,48 @@ evidence.
 Improves the app's demo quality and perceived completeness without changing the core data
 model. This makes the implemented proposal features easier for a marker to understand in a
 live walkthrough or screenshot sequence.
+
+## 2026-06-22
+
+### Branch
+`design/app-personality-polish`
+
+### Commit message
+`design(app): extend habitus visual identity across core flows`
+
+### Files changed
+- `HABITUS.xcodeproj/project.pbxproj`
+- `Views/Components/HabitusStyle.swift`
+- `Views/Goals/GoalsView.swift`
+- `Views/Logging/LogActivityView.swift`
+- `Views/MainTabView.swift`
+- `Views/Onboarding/AuthView.swift`
+- `Views/Onboarding/SignInView.swift`
+- `Views/Onboarding/SignUpView.swift`
+- `Views/SettingsView.swift`
+- `Views/Sleep/SleepCheckInView.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports final MVP presentation quality by carrying the dashboard's HABITUS identity into
+the main user journeys: authentication, onboarding/profile setup, sleep check-in, activity
+logging, goals, and settings/privacy controls. Goals is also promoted to its own tab so the
+intention-setting and Smart Planning feedback loop is visible as a primary app flow rather
+than hidden inside Settings. This improves the visible evidence for onboarding
+personalisation, recovery inputs, activity logging, goal setting, and account data handling
+without changing the Firebase data model.
+
+### Testing evidence
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- App launch on iPhone 16 simulator passed after the style helper was added to the Xcode
+  target.
+- Simulator smoke test: Dashboard still rendered, Log opened with the new activity panels
+  and save CTA, Settings opened with the recovery/privacy sections, and Weekly goals opened
+  as a first-class tab with the new summary and target controls.
+
+### Dissertation relevance
+Improves the perceived completeness and professionalism of the MVP for final screenshots,
+video walkthroughs, and live marking. The work makes implemented proposal features easier to
+demonstrate as one coherent product rather than a polished dashboard surrounded by default
+forms.

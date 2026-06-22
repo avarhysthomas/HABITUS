@@ -18,43 +18,48 @@ struct GoalsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                Text("Weekly goals")
-                    .font(.largeTitle.bold())
+            VStack(alignment: .leading, spacing: 22) {
+                HabitusScreenHeader(
+                    eyebrow: "Planning",
+                    title: "Weekly goals",
+                    subtitle: "Tune the targets HABITUS uses when matching sessions to your week."
+                )
+
+                goalsSummaryCard
 
                 goalCard(
-                    title: "Workout Count",
-                    value: workoutCount,
+                    title: "Workout count",
+                    value: $workoutCount,
                     range: 0...14,
                     step: 1,
                     unit: "sessions"
                 )
 
                 goalCard(
-                    title: "Run Distance",
-                    value: runDistance,
+                    title: "Run distance",
+                    value: $runDistance,
                     range: 0...100,
                     step: 1,
                     unit: "km"
                 )
 
                 goalCard(
-                    title: "Mobility Sessions",
-                    value: mobilitySessions,
+                    title: "Mobility sessions",
+                    value: $mobilitySessions,
                     range: 0...14,
                     step: 1,
                     unit: "sessions"
                 )
 
                 goalCard(
-                    title: "Meditation Sessions",
-                    value: meditationSessions,
+                    title: "Meditation sessions",
+                    value: $meditationSessions,
                     range: 0...14,
                     step: 1,
                     unit: "sessions"
                 )
 
-                Button("Save goals") {
+                Button {
                     Task {
                         await goalsStore.saveGoal(
                             type: .workoutCount,
@@ -73,12 +78,17 @@ struct GoalsView: View {
                             targetValue: meditationSessions
                         )
                     }
+                } label: {
+                    Label("Save goals", systemImage: "target")
+                        .habitusPrimaryCTA()
                 }
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
             }
-            .padding()
+            .padding(.horizontal, 18)
+            .padding(.top, 18)
+            .padding(.bottom, 30)
         }
+        .background(HabitusStyle.screenBackground)
+        .scrollIndicators(.hidden)
         .onAppear {
             goalsStore.startListening()
             hydrateFromExistingGoals()
@@ -91,36 +101,79 @@ struct GoalsView: View {
         }
     }
 
+    private var goalsSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Office athlete week")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(.white)
+
+                    Text("Targets set the guardrails for Smart Planning.")
+                        .font(.subheadline)
+                        .foregroundStyle(.white.opacity(0.78))
+                }
+
+                Spacer()
+
+                Text("\(Int(workoutCount))")
+                    .font(.system(size: 36, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+            }
+
+            HStack(spacing: 10) {
+                summaryPill(title: "Run", value: "\(Int(runDistance)) km")
+                summaryPill(title: "Mobility", value: "\(Int(mobilitySessions))")
+                summaryPill(title: "Mind", value: "\(Int(meditationSessions))")
+            }
+        }
+        .padding(22)
+        .background(HabitusStyle.heroGradient)
+        .clipShape(RoundedRectangle(cornerRadius: 28))
+        .shadow(color: HabitusStyle.teal.opacity(0.22), radius: 22, x: 0, y: 12)
+    }
+
+    private func summaryPill(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.72))
+
+            Text(value)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(.white)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.16))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+
     @ViewBuilder
     private func goalCard(
         title: String,
-        value: Double,
+        value: Binding<Double>,
         range: ClosedRange<Double>,
         step: Double,
         unit: String
     ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text(title)
+                    .font(.headline.weight(.bold))
+
                 Spacer()
-                Text("\(Int(value)) \(unit)")
+
+                Text("\(Int(value.wrappedValue)) \(unit)")
+                    .font(.subheadline.weight(.bold))
                     .foregroundStyle(.secondary)
             }
 
-            switch title {
-            case "Workout Count":
-                Slider(value: $workoutCount, in: range, step: step)
-            case "Run Distance":
-                Slider(value: $runDistance, in: range, step: step)
-            case "Mobility Sessions":
-                Slider(value: $mobilitySessions, in: range, step: step)
-            default:
-                Slider(value: $meditationSessions, in: range, step: step)
-            }
+            Slider(value: value, in: range, step: step)
+                .tint(HabitusStyle.teal)
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 24))
+        .habitusPanel()
     }
 
     private func hydrateFromExistingGoals() {

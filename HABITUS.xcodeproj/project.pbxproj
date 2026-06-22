@@ -51,6 +51,7 @@
 		A1B125622F6841B0002B5903 /* GoalProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125612F6841B0002B5903 /* GoalProgressService.swift */; };
 		A1B125712F6844E7002B5903 /* GoalProgressRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125702F6844E7002B5903 /* GoalProgressRow.swift */; };
 		A1B125732F684DFA002B5903 /* WeekStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125722F684DFA002B5903 /* WeekStripView.swift */; };
+		A1B125752F691111002B5903 /* HabitusStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B125742F691111002B5903 /* HabitusStyle.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +115,7 @@
 		A1B125612F6841B0002B5903 /* GoalProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalProgressService.swift; sourceTree = "<group>"; };
 		A1B125702F6844E7002B5903 /* GoalProgressRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalProgressRow.swift; sourceTree = "<group>"; };
 		A1B125722F684DFA002B5903 /* WeekStripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekStripView.swift; sourceTree = "<group>"; };
+		A1B125742F691111002B5903 /* HabitusStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HabitusStyle.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -266,6 +268,7 @@
 		A1131B5A2F1668D700F99D2F /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				A1B125742F691111002B5903 /* HabitusStyle.swift */,
 				A1B124EF2F61CDE4002B5903 /* SessionRowView.swift */,
 				A1131BBA2F17EC8200F99D2F /* ActivityRow.swift */,
 				A1131B5B2F1668DE00F99D2F /* StatCard.swift */,
@@ -503,6 +506,7 @@
 				A1131B632F17CD3D00F99D2F /* SettingsView.swift in Sources */,
 				A1B124EE2F61CDD6002B5903 /* TodaySessionsStore.swift in Sources */,
 				A1B124E82F61C581002B5903 /* MetricRing.swift in Sources */,
+				A1B125752F691111002B5903 /* HabitusStyle.swift in Sources */,
 				A1131B5D2F166E7D00F99D2F /* HabitusApp.swift in Sources */,
 				A1B1253D2F681CB7002B5903 /* Goal.swift in Sources */,
 				A1B124EA2F61C7E4002B5903 /* FirebaseBootstrapper.swift in Sources */,
