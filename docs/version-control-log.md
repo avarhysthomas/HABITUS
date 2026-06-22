@@ -435,3 +435,48 @@ the repository and restrict direct client access to the authenticated user's own
 Creates explicit version-controlled security evidence for HABITUS. This strengthens the
 privacy discussion by showing that user wellness data is scoped by Firebase Authentication
 rather than relying only on app UI behaviour.
+
+## 2026-06-22
+
+### Branch
+`design/dashboard-personality-refresh`
+
+### Commit message
+`design(dashboard): refresh habitus daily briefing experience`
+
+### Files changed
+- `Views/Dashboard/DashboardView.swift`
+- `Components/SmartPlanCard.swift`
+- `Components/ScheduledPlanCard.swift`
+- `Views/Components/SessionRowView.swift`
+- `Services/SmartPlanning/CalendarAvailabilityService.swift`
+- `docs/version-control-log.md`
+
+### Feature / requirement supported
+Supports the final MVP presentation quality by giving HABITUS a clearer product identity:
+a calm office-athlete cockpit with a daily briefing, featured next best action, cockpit-style
+body-load metrics, calendar-aware planning status, streaks, progress, and editable activity
+evidence.
+
+### Testing evidence
+- iOS simulator compile-only build passed for scheme `HABITUS` on iPhone 16 simulator with
+  no warnings or errors.
+- A follow-up compile-only build also passed after strengthening the Smart Plan card,
+  body-load panel, and momentum section styling.
+- Calendar availability was tightened so all-day/free/cancelled events do not block the
+  workday and an approved empty calendar returns usable free slots.
+- A further compile-only build passed after giving the weekly snapshot, habit streaks, and
+  empty activity log stronger visual treatments so the lower dashboard better matches the
+  readiness and Smart Plan cards.
+- The default centered dashboard navigation title was replaced with a smaller in-content
+  HABITUS brand chip so the custom daily briefing header carries the screen identity.
+- App launch verification passed on iPhone 16 simulator; the simulator opened to the
+  sign-up/profile flow, so a signed-in dashboard walkthrough remains a manual check.
+- Simulator flow to verify manually: sign in, complete the sleep check-in if prompted, open
+  Dashboard, and confirm the first screen reads as a daily briefing with Smart Planning
+  surfaced before supporting progress and log sections.
+
+### Dissertation relevance
+Improves the app's demo quality and perceived completeness without changing the core data
+model. This makes the implemented proposal features easier for a marker to understand in a
+live walkthrough or screenshot sequence.

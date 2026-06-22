@@ -39,7 +39,7 @@ final class CalendarAvailabilityService {
         let startOfDay = calendar.startOfDay(for: date)
 
         guard
-            let dayStart = calendar.date(
+            let configuredDayStart = calendar.date(
                 bySettingHour: dayStartHour,
                 minute: 0,
                 second: 0,
@@ -55,8 +55,25 @@ final class CalendarAvailabilityService {
             return []
         }
 
+        let dayStart = effectiveStart(
+            configuredStart: configuredDayStart,
+            dayEnd: dayEnd,
+            date: date
+        )
+
+        guard dayStart < dayEnd else {
+            return []
+        }
+
         let eventsToday = events(for: date)
+            .filter(isBlockingEvent)
             .filter { $0.endDate > dayStart && $0.startDate < dayEnd }
+
+        if eventsToday.isEmpty {
+            return splitLargeSlotIfNeeded(TimeSlot(start: dayStart, end: dayEnd))
+                .filter { isReasonableCandidate($0) }
+                .sorted { $0.start < $1.start }
+        }
 
         var rawFreeSlots: [TimeSlot] = []
         var cursor = dayStart
@@ -84,6 +101,58 @@ final class CalendarAvailabilityService {
             .filter { isReasonableCandidate($0) }
 
         return filtered.sorted { $0.start < $1.start }
+    }
+
+    private func effectiveStart(
+        configuredStart: Date,
+        dayEnd: Date,
+        date: Date
+    ) -> Date {
+        let calendar = Calendar.current
+
+        guard calendar.isDateInToday(date) else {
+            return configuredStart
+        }
+
+        let now = Date()
+        guard now > configuredStart else {
+            return configuredStart
+        }
+
+        guard now < dayEnd else {
+            return dayEnd
+        }
+
+        let minute = calendar.component(.minute, from: now)
+        let roundedMinute = Int(ceil(Double(minute) / 15.0) * 15.0)
+
+        if roundedMinute >= 60 {
+            return calendar.date(
+                bySettingHour: calendar.component(.hour, from: now) + 1,
+                minute: 0,
+                second: 0,
+                of: now
+            ) ?? now
+        }
+
+        return calendar.date(
+            bySettingHour: calendar.component(.hour, from: now),
+            minute: roundedMinute,
+            second: 0,
+            of: now
+        ) ?? now
+    }
+
+    private func isBlockingEvent(_ event: EKEvent) -> Bool {
+        guard !event.isAllDay else {
+            return false
+        }
+
+        guard event.status != .canceled else {
+            return false
+        }
+
+        return event.availability != .free
     }
 
     private func splitLargeSlotIfNeeded(_ slot: TimeSlot) -> [TimeSlot] {
